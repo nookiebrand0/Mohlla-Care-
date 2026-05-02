@@ -1,0 +1,162 @@
+import React, { useState } from "react";
+import { motion } from "motion/react";
+import { User } from "../types";
+import {
+  User as UserIcon,
+  ShieldCheck,
+  MapPin,
+  Edit3,
+  Settings,
+  LogOut,
+  Check,
+  X
+} from "lucide-react";
+
+interface UserProfileProps {
+  user: User;
+  onLogout: () => void;
+}
+
+export function UserProfile({ user: initialUser, onLogout }: UserProfileProps) {
+  const [user, setUser] = useState<User>(initialUser);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ 
+    name: user.name || "", 
+    phone: user.phone || "" 
+  });
+
+  const handleSave = () => {
+    setUser({ ...user, name: editForm.name, phone: editForm.phone });
+    setIsEditing(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="w-full pb-16"
+    >
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-white tracking-tight">
+          Your Profile
+        </h2>
+      </div>
+
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col items-center mb-6">
+        <div className="relative mb-4">
+          <div className="w-24 h-24 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center p-1">
+            <div className="w-full h-full bg-slate-900 rounded-full flex items-center justify-center border-2 border-slate-900">
+              <UserIcon className="w-10 h-10 text-white opacity-80" />
+            </div>
+          </div>
+          {!isEditing && (
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full shadow-lg border-2 border-slate-900 hover:bg-blue-600 transition-colors"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {isEditing ? (
+          <div className="flex flex-col items-center w-full max-w-sm gap-3 mt-2 mb-4">
+            <input 
+              type="text" 
+              value={editForm.name} 
+              onChange={e => setEditForm({...editForm, name: e.target.value})}
+              className="w-full bg-black/50 border border-white/20 text-white rounded-xl px-4 py-3 text-center font-bold text-lg"
+              placeholder="Your Name"
+            />
+            <input 
+              type="text" 
+              value={editForm.phone} 
+              onChange={e => setEditForm({...editForm, phone: e.target.value})}
+              className="w-full bg-black/50 border border-white/20 text-blue-400 rounded-xl px-4 py-3 text-center font-semibold"
+              placeholder="Phone Number"
+            />
+            <div className="flex gap-2 w-full mt-2">
+              <button 
+                onClick={handleSave} 
+                className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-bold transition-all"
+              >
+                <Check className="w-5 h-5" /> Save
+              </button>
+              <button 
+                onClick={() => setIsEditing(false)} 
+                className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 rounded-xl font-bold transition-all"
+              >
+                <X className="w-5 h-5" /> Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h3 className="text-2xl font-bold text-white flex items-center gap-2 mt-2">
+              {user.name || "Set Name"}
+              <ShieldCheck className="w-5 h-5 text-green-500" />
+            </h3>
+            <p className="text-slate-400 mt-1">{user.phone}</p>
+          </>
+        )}
+
+        {!isEditing && (
+          <div className="flex items-center gap-2 mt-4 bg-white/5 py-1.5 px-3 rounded-full text-xs font-semibold text-slate-300">
+            <MapPin className="w-4 h-4 text-blue-400" />
+            {user.area || "Add your area / locality"}
+          </div>
+        )}
+
+        <div className="w-full mt-8 pt-8 border-t border-white/10 grid grid-cols-2 gap-4 text-center">
+          <div>
+            <div className="text-3xl font-black text-white">
+              {user.points || 0}
+            </div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">
+              Karma Points
+            </div>
+          </div>
+          <div>
+            <div className="text-3xl font-black text-white capitalize">
+              {user.role || "User"}
+            </div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">
+              Account Type
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-sm">
+          <button
+            onClick={() => {
+              setIsEditing(true);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400">
+                <Settings className="w-5 h-5" />
+              </div>
+              <span className="font-semibold text-white">App Settings</span>
+            </div>
+          </button>
+          <div className="h-px bg-white/10 w-full" />
+          <button
+            onClick={onLogout}
+            className="w-full p-4 flex items-center justify-between hover:bg-red-500/10 transition-colors group"
+          >
+            <div className="flex items-center gap-3 text-red-400">
+              <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all">
+                <LogOut className="w-5 h-5" />
+              </div>
+              <span className="font-semibold">Log Out</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}

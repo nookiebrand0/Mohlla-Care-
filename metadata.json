@@ -1,0 +1,8 @@
+{
+  "name": "Mohalla Care",
+  "description": "A community application to report and resolve neighborhood problems with a simulated OTP login.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}

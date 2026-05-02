@@ -1,0 +1,206 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && request.auth.token.email == 'nookiebrand0@gmail.com'; } // Bootstrapped admin
+
+    // Validation Blueprint for User
+    function isValidUser(data) {
+      return data.keys().hasAll(['name', 'role', 'isVerified']) &&
+             data.keys().size() >= 3 && data.keys().size() <= 6 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.role is string && data.role in ['user', 'provider'] &&
+             data.isVerified is bool &&
+             (data.keys().hasAny(['phone']) == false || (data.phone is string && data.phone.size() <= 20)) &&
+             (data.keys().hasAny(['area']) == false || (data.area is string && data.area.size() <= 100)) &&
+             (data.keys().hasAny(['points']) == false || data.points is number);
+    }
+    
+    // Validation Blueprint for Issue
+    function isValidIssue(data) {
+      return data.keys().hasAll(['title', 'description', 'category', 'status', 'upvotes', 'reportedBy', 'createdAt', 'userId']) &&
+             data.keys().size() >= 8 && data.keys().size() <= 9 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.status is string && data.status in ['reported', 'in-progress', 'resolved'] &&
+             data.upvotes is number &&
+             data.reportedBy is string && data.reportedBy.size() <= 100 &&
+             data.createdAt is string && data.createdAt.size() <= 50 &&
+             data.userId == request.auth.uid &&
+             (data.keys().hasAny(['imageUrl']) == false || (data.imageUrl is string && data.imageUrl.size() <= 1000));
+    }
+
+    function isUpvoteAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly(['upvotes']);
+    }
+
+    // Validation Blueprint for ServiceContact
+    function isValidServiceContact(data) {
+      return data.keys().hasAll(['name', 'category', 'phone', 'rating']) &&
+             data.keys().size() == 4 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.phone is string && data.phone.size() <= 20 &&
+             data.rating is number;
+    }
+
+    // Validation Blueprint for ServiceProvider
+    function isValidServiceProvider(data) {
+      return data.keys().hasAll(['name', 'serviceType', 'description', 'price', 'phone', 'rating']) &&
+             data.keys().size() == 6 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.serviceType is string && data.serviceType.size() <= 50 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.price is string && data.price.size() <= 50 &&
+             data.phone is string && data.phone.size() <= 20 &&
+             data.rating is number;
+    }
+
+    // Validation Blueprint for Job
+    function isValidJob(data) {
+      return data.keys().hasAll(['title', 'company', 'type', 'description', 'salary', 'contact']) &&
+             data.keys().size() == 6 &&
+             data.title is string && data.title.size() <= 100 &&
+             data.company is string && data.company.size() <= 100 &&
+             data.type is string && data.type in ['Part-time', 'Work from Home', 'Full-time'] &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.salary is string && data.salary.size() <= 50 &&
+             data.contact is string && data.contact.size() <= 100;
+    }
+
+    // Validation Blueprint for CommunityPost
+    function isValidCommunityPost(data) {
+      return data.keys().hasAll(['content', 'isAnonymous', 'replies', 'createdAt', 'userId']) &&
+             data.keys().size() >= 5 && data.keys().size() <= 6 &&
+             data.content is string && data.content.size() <= 2000 &&
+             data.isAnonymous is bool &&
+             data.replies is number &&
+             data.createdAt is string && data.createdAt.size() <= 50 &&
+             data.userId == request.auth.uid &&
+             (data.keys().hasAny(['authorName']) == false || (data.authorName is string && data.authorName.size() <= 100));
+    }
+    
+    // Validation Blueprint for Shop
+    function isValidShop(data) {
+      return data.keys().hasAll(['name', 'category', 'rating', 'isOpen']) &&
+             data.keys().size() == 4 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.rating is number &&
+             data.isOpen is bool;
+    }
+
+    // Validation Blueprint for Product
+    function isValidProduct(data) {
+      return data.keys().hasAll(['shopId', 'name', 'price']) &&
+             data.keys().size() >= 3 && data.keys().size() <= 7 &&
+             data.shopId is string && data.shopId.size() <= 128 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.price is number &&
+             (data.keys().hasAny(['imageUrl']) == false || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+             (data.keys().hasAny(['isHomemade']) == false || data.isHomemade is bool) &&
+             (data.keys().hasAny(['sellerName']) == false || (data.sellerName is string && data.sellerName.size() <= 100)) &&
+             (data.keys().hasAny(['description']) == false || (data.description is string && data.description.size() <= 2000));
+    }
+
+    // USERS COLLECTION
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isSignedIn() && (userId == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      
+      allow create: if isValidId(userId) && userId == request.auth.uid && isValidUser(incoming());
+      
+      allow update: if isValidId(userId) && isSignedIn() && isValidUser(incoming()) && (
+        isAdmin() ||
+        (userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'area', 'points']))
+      );
+    }
+    
+    // ISSUES COLLECTION
+    match /issues/{issueId} {
+      allow get, list: if isSignedIn();
+      
+      allow create: if isValidId(issueId) && isSignedIn() && isValidIssue(incoming()) && 
+                    exists(/databases/$(database)/documents/users/$(request.auth.uid));
+                    
+      allow update: if isValidId(issueId) && isSignedIn() && isValidIssue(incoming()) && incoming().userId == existing().userId && (
+        isAdmin() ||
+        (isUpvoteAction() && incoming().upvotes is number) ||
+        (existing().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'status']))
+      );
+      
+      allow delete: if isValidId(issueId) && isSignedIn() && (isAdmin() || existing().userId == request.auth.uid);
+    }
+
+    // SERVICES COLLECTION
+    match /services/{serviceId} {
+      allow get, list: if isSignedIn();
+      allow create: if isValidId(serviceId) && isSignedIn() && isValidServiceContact(incoming()) && isAdmin();
+      allow update: if isValidId(serviceId) && isSignedIn() && isValidServiceContact(incoming()) && isAdmin();
+      allow delete: if isValidId(serviceId) && isSignedIn() && isAdmin();
+    }
+    
+    // WOMEN SERVICES COLLECTION
+    match /womenServices/{serviceId} {
+      allow get, list: if isSignedIn();
+      allow create: if isValidId(serviceId) && isSignedIn() && isValidServiceProvider(incoming()) && isAdmin();
+      allow update: if isValidId(serviceId) && isSignedIn() && isValidServiceProvider(incoming()) && isAdmin();
+      allow delete: if isValidId(serviceId) && isSignedIn() && isAdmin();
+    }
+
+    // JOBS COLLECTION
+    match /jobs/{jobId} {
+      allow get, list: if isSignedIn();
+      allow create: if isValidId(jobId) && isSignedIn() && isValidJob(incoming()) && isAdmin();
+      allow update: if isValidId(jobId) && isSignedIn() && isValidJob(incoming()) && isAdmin();
+      allow delete: if isValidId(jobId) && isSignedIn() && isAdmin();
+    }
+
+    // COMMUNITY POSTS COLLECTION
+    match /communityPosts/{postId} {
+      allow get, list: if isSignedIn();
+      allow create: if isValidId(postId) && isSignedIn() && isValidCommunityPost(incoming()) && 
+                    exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isValidId(postId) && isSignedIn() && isValidCommunityPost(incoming()) && incoming().userId == existing().userId && (
+        isAdmin() ||
+        (existing().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['content'])) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['replies']) && incoming().replies is number)
+      );
+      allow delete: if isValidId(postId) && isSignedIn() && (isAdmin() || existing().userId == request.auth.uid);
+    }
+
+    // SHOPS COLLECTION
+    match /shops/{shopId} {
+      allow get, list: if isSignedIn();
+      allow create: if isValidId(shopId) && isSignedIn() && isValidShop(incoming()) && isAdmin();
+      allow update: if isValidId(shopId) && isSignedIn() && isValidShop(incoming()) && isAdmin();
+      allow delete: if isValidId(shopId) && isSignedIn() && isAdmin();
+    }
+
+    // PRODUCTS COLLECTION
+    match /products/{productId} {
+      allow get, list: if isSignedIn();
+      allow create: if isValidId(productId) && isSignedIn() && isValidProduct(incoming()) && isAdmin();
+      allow update: if isValidId(productId) && isSignedIn() && isValidProduct(incoming()) && isAdmin();
+      allow delete: if isValidId(productId) && isSignedIn() && isAdmin();
+    }
+    
+    // Upvotes tracking
+    match /users/{userId}/upvotedIssues/{issueId} {
+      allow get, list: if isValidId(userId) && isValidId(issueId) && isSignedIn() && (userId == request.auth.uid || isAdmin());
+      allow create: if isValidId(userId) && isValidId(issueId) && isSignedIn() && userId == request.auth.uid && 
+                    incoming().keys().hasOnly(['timestamp']) && incoming().timestamp is timestamp;
+      allow delete: if isValidId(userId) && isValidId(issueId) && isSignedIn() && userId == request.auth.uid;
+    }
+  }
+}

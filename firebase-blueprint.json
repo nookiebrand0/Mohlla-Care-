@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile containing points and role",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string" },
+        "name": { "type": "string" },
+        "points": { "type": "number" },
+        "area": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "provider"] },
+        "isVerified": { "type": "boolean" }
+      },
+      "required": ["name", "role", "isVerified"]
+    },
+    "Issue": {
+      "title": "Issue",
+      "description": "Community issue reported by users",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string", "enum": ["reported", "in-progress", "resolved"] },
+        "upvotes": { "type": "number" },
+        "reportedBy": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["title", "description", "category", "status", "upvotes", "reportedBy", "createdAt"]
+    },
+    "ServiceContact": {
+      "title": "ServiceContact",
+      "description": "Directory of local services",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "phone": { "type": "string" },
+        "rating": { "type": "number" }
+      },
+      "required": ["name", "category", "phone", "rating"]
+    },
+    "ServiceProvider": {
+      "title": "ServiceProvider",
+      "description": "Women marketplace services",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "serviceType": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "string" },
+        "phone": { "type": "string" },
+        "rating": { "type": "number" }
+      },
+      "required": ["name", "serviceType", "description", "price", "phone", "rating"]
+    },
+    "Job": {
+      "title": "Job",
+      "description": "Local job postings",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "company": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "salary": { "type": "string" },
+        "contact": { "type": "string" }
+      },
+      "required": ["title", "company", "type", "description", "salary", "contact"]
+    },
+    "CommunityPost": {
+      "title": "CommunityPost",
+      "description": "Posts in the community forum",
+      "type": "object",
+      "properties": {
+        "content": { "type": "string" },
+        "isAnonymous": { "type": "boolean" },
+        "authorName": { "type": "string" },
+        "replies": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["content", "isAnonymous", "replies", "createdAt"]
+    },
+    "Shop": {
+      "title": "Shop",
+      "description": "Local shops",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "rating": { "type": "number" },
+        "isOpen": { "type": "boolean" }
+      },
+      "required": ["name", "category", "rating", "isOpen"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Products available in shops",
+      "type": "object",
+      "properties": {
+        "shopId": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "isHomemade": { "type": "boolean" },
+        "sellerName": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["shopId", "name", "price"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "issues/{issueId}": {
+      "schema": { "$ref": "#/entities/Issue" },
+      "description": "Community issues"
+    },
+    "services/{serviceId}": {
+      "schema": { "$ref": "#/entities/ServiceContact" },
+      "description": "Directory services"
+    },
+    "womenServices/{serviceId}": {
+      "schema": { "$ref": "#/entities/ServiceProvider" },
+      "description": "Women service marketplace"
+    },
+    "jobs/{jobId}": {
+      "schema": { "$ref": "#/entities/Job" },
+      "description": "Job listings"
+    },
+    "communityPosts/{postId}": {
+      "schema": { "$ref": "#/entities/CommunityPost" },
+      "description": "Forum posts"
+    },
+    "shops/{shopId}": {
+      "schema": { "$ref": "#/entities/Shop" },
+      "description": "Shops"
+    },
+    "products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Products"
+    }
+  }
+}
