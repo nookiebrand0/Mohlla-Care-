@@ -52,8 +52,10 @@ export function AppLayout({
   user,
   onLogout,
 }: NavigationContext & { children: React.ReactNode }) {
-  const [showSOS, setShowSOS] = useState(false);
+  const [sosStage, setSosStage] = useState<"idle" | "confirm" | "activated">("idle");
   const [isDark, setIsDark] = useState(true);
+  const [holdProgress, setHoldProgress] = useState(0);
+  const holdIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     // Determine initial theme
@@ -74,8 +76,39 @@ export function AppLayout({
   };
 
   const triggerSOS = () => {
-    setShowSOS(true);
-    setTimeout(() => setShowSOS(false), 5000);
+    setSosStage("confirm");
+  };
+
+  const cancelSOS = () => {
+    setSosStage("idle");
+    setHoldProgress(0);
+    if (holdIntervalRef.current) {
+      clearInterval(holdIntervalRef.current);
+      holdIntervalRef.current = null;
+    }
+  };
+
+  const startHold = () => {
+    if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+    const startTime = Date.now();
+    holdIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min((elapsed / 2000) * 100, 100);
+      setHoldProgress(progress);
+      if (progress >= 100) {
+        clearInterval(holdIntervalRef.current!);
+        holdIntervalRef.current = null;
+        setSosStage("activated");
+      }
+    }, 50);
+  };
+
+  const endHold = () => {
+    if (sosStage !== "activated" && holdIntervalRef.current) {
+      clearInterval(holdIntervalRef.current);
+      holdIntervalRef.current = null;
+      setHoldProgress(0);
+    }
   };
 
   return (
@@ -207,32 +240,66 @@ export function AppLayout({
 
       {/* SOS Modal */}
       <AnimatePresence>
-        {showSOS && (
+        {sosStage !== "idle" && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-red-950/80 backdrop-blur-sm"
           >
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-red-600 border-4 border-red-400 p-8 rounded-3xl max-w-sm w-full shadow-2xl text-center relative overflow-hidden animate-pulse"
-            >
-              <ShieldAlert className="w-24 h-24 text-white mx-auto mb-4" />
-              <h2 className="text-3xl font-black text-white mb-2">SOS ALERT SENT</h2>
-              <p className="text-red-100 font-bold mb-8 mt-4">
-                Your location has been shared with local authorities and nearby community leaders. 
-                Help is on the way.
-              </p>
-              <button 
-                onClick={() => setShowSOS(false)}
-                className="px-6 py-3 w-full bg-white text-red-600 rounded-full font-black uppercase tracking-widest hover:bg-red-100 transition-colors"
+            {sosStage === "confirm" ? (
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="bg-white dark:bg-slate-900 border border-red-500/30 p-8 rounded-3xl max-w-sm w-full shadow-2xl text-center relative overflow-hidden"
               >
-                Dismiss
-              </button>
-            </motion.div>
+                <div className="absolute top-4 right-4">
+                   <button onClick={cancelSOS} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                   </button>
+                </div>
+                <ShieldAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Confirm SOS</h2>
+                <p className="text-slate-500 dark:text-slate-400 font-medium mb-8">
+                  Press and hold the button below for 2 seconds to activate the emergency SOS. This will alert local authorities and your connections.
+                </p>
+                <div className="flex justify-center mb-4">
+                  <button
+                    onPointerDown={startHold}
+                    onPointerUp={endHold}
+                    onPointerLeave={endHold}
+                    className="relative w-32 h-32 rounded-full border-4 border-red-100 dark:border-red-900 flex items-center justify-center bg-red-50 dark:bg-red-950/50 outline-none select-none touch-none hover:bg-red-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <div 
+                      className="absolute inset-0 bg-red-500 rounded-full opacity-50 transition-all pointer-events-none"
+                      style={{ transform: `scale(${holdProgress / 100})` }}
+                    ></div>
+                    <span className="relative z-10 font-bold text-red-600 dark:text-red-400 uppercase tracking-widest pointer-events-none">Hold</span>
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="bg-red-600 border-4 border-red-400 p-8 rounded-3xl max-w-sm w-full shadow-2xl text-center relative overflow-hidden animate-pulse"
+              >
+                <ShieldAlert className="w-24 h-24 text-white mx-auto mb-4" />
+                <h2 className="text-3xl font-black text-white mb-2">SOS ALERT SENT</h2>
+                <p className="text-red-100 font-bold mb-8 mt-4">
+                  Your location has been shared with local authorities and nearby community leaders. 
+                  Help is on the way.
+                </p>
+                <button 
+                  onClick={cancelSOS}
+                  className="px-6 py-3 w-full bg-white text-red-600 rounded-full font-black uppercase tracking-widest hover:bg-red-100 transition-colors"
+                >
+                  Dismiss
+                </button>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

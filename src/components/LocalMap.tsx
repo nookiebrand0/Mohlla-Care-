@@ -1,69 +1,129 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, Navigation, Loader2, AlertCircle } from "lucide-react";
 
 export function LocalMap() {
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLocation = () => {
+    setLoading(true);
+    setError(null);
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser");
+      setLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching location:", error);
+        setError("Unable to retrieve your location. Please check permissions.");
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    );
+  };
+
+  useEffect(() => {
+    // Optionally fetch on mount
+    // fetchLocation();
+
+    // Default to a central location if not fetched
+    setLocation({ lat: 28.6139, lng: 77.209 }); // Default New Delhi
+  }, []);
+
+  // Compute a bounding box approx 2km across
+  const delta = 0.015;
+  const bbox = location
+    ? `${location.lng - delta},${location.lat - delta},${location.lng + delta},${location.lat + delta}`
+    : "";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full h-full flex flex-col"
+      className="w-full h-full flex flex-col max-w-7xl mx-auto"
     >
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-white tracking-tight">
-            Mohalla Map
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+            Live Map
           </h2>
-          <p className="text-slate-400 text-sm mt-1">
-            Explore issues and services near you
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">
+            Discover community activity and issues near you
           </p>
         </div>
-        <button className="hidden sm:flex bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-medium items-center gap-2 transition-all shadow-lg shadow-blue-500/20">
-          <Navigation className="w-4 h-4" /> My Location
+        <button
+          onClick={fetchLocation}
+          disabled={loading}
+          className="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium w-full sm:w-auto flex items-center justify-center gap-2 transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50"
+        >
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Navigation className="w-5 h-5" />
+          )}
+          Locate Me
         </button>
       </div>
 
-      <div className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden relative min-h-[500px] md:min-h-[600px] shadow-2xl p-2 pb-[64px] md:pb-2">
-        <div className="w-full h-full rounded-2xl overflow-hidden relative bg-slate-900">
-          {/* We use OpenStreetMap via iframe for a functional map look without taking API keys. 
-              The filter class makes it fit the dark mode semi-transparent theme. */}
-          <iframe
-            title="Local Area Map"
-            width="100%"
-            height="100%"
-            loading="lazy"
-            frameBorder="0"
-            scrolling="no"
-            marginHeight={0}
-            marginWidth={0}
-            src="https://www.openstreetmap.org/export/embed.html?bbox=77.20230102539064%2C28.601936302523292%2C77.23457336425783%2C28.6254425790076&amp;layer=mapnik"
-            className="filter invert hue-rotate-180 contrast-75 opacity-80"
-          ></iframe>
-
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
-            <div className="bg-blue-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg shadow-blue-500/40 mb-1 border border-white/20 whitespace-nowrap">
-              You are here
-            </div>
-            <MapPin className="w-8 h-8 text-blue-500 drop-shadow-md" />
-            <div className="w-3 h-1 bg-black/40 rounded-full blur-[2px] mt-1"></div>
-          </div>
-
-          {/* Decorative pins mimicking other users or issues */}
-          <div className="absolute top-[30%] left-[60%] flex flex-col items-center pointer-events-none">
-            <div className="w-4 h-4 bg-red-500 rounded-full border-2 border-slate-900 shadow-md"></div>
-          </div>
-          <div className="absolute top-[60%] left-[30%] flex flex-col items-center pointer-events-none">
-            <div className="w-4 h-4 bg-yellow-500 rounded-full border-2 border-slate-900 shadow-md"></div>
-          </div>
-          <div className="absolute top-[40%] left-[20%] flex flex-col items-center pointer-events-none">
-            <div className="w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 shadow-md"></div>
-          </div>
+      {error && (
+        <div className="mb-4 bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 p-3 rounded-lg border border-red-100 dark:border-red-500/20 text-sm font-medium flex items-center gap-2">
+          <AlertCircle className="w-4 h-4" />
+          {error}
         </div>
+      )}
 
-        <div className="absolute bottom-6 left-6 right-6 md:hidden">
-          <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/40 transition-all flex items-center justify-center gap-2">
-            <Navigation className="w-5 h-5" /> Locate Me
-          </button>
+      <div className="flex-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 rounded-3xl overflow-hidden relative min-h-[500px] md:min-h-[600px] shadow-sm p-1.5 md:pb-1.5">
+        <div className="w-full h-full rounded-[20px] overflow-hidden relative bg-slate-100 dark:bg-slate-800">
+          {location ? (
+            <iframe
+              title="Local Area Map"
+              width="100%"
+              height="100%"
+              loading="lazy"
+              frameBorder="0"
+              scrolling="no"
+              marginHeight={0}
+              marginWidth={0}
+              className="dark:filter dark:invert dark:hue-rotate-180 dark:contrast-75 dark:opacity-80 transition-all duration-700"
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${location.lat},${location.lng}`}
+            ></iframe>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center flex-col gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+              <span className="text-slate-500 font-medium">Loading Map...</span>
+            </div>
+          )}
+
+          {location && (
+            <div className="absolute bottom-6 right-6 pointer-events-none">
+              <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-lg border border-gray-200 dark:border-white/10 shadow-lg flex items-center gap-2">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300">
+                  Live GPS Active
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

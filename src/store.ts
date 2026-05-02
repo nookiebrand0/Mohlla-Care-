@@ -107,8 +107,9 @@ export const store = {
   async addIssue(issue: Issue) {
     const id = issue.id || Date.now().toString();
     const docRef = doc(db, 'issues', id);
+    const { id: _, ...issueWithoutId } = issue;
     try {
-      await setDoc(docRef, { ...issue, userId: auth.currentUser?.uid, id: undefined });
+      await setDoc(docRef, { ...issueWithoutId, userId: auth.currentUser?.uid });
     } catch(err) {
       handleFirestoreError(err, OperationType.CREATE, 'issues');
     }
@@ -130,8 +131,9 @@ export const store = {
 
   async addJob(job: Job) {
     const id = job.id || Date.now().toString();
+    const { id: _, ...data } = job;
     try {
-      await setDoc(doc(db, 'jobs', id), { ...job, id: undefined });
+      await setDoc(doc(db, 'jobs', id), data);
     } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'jobs'); }
   },
   async updateJob(id: string, partial: Partial<Job>) {
@@ -143,7 +145,8 @@ export const store = {
 
   async addService(service: ServiceProvider) {
     const id = service.id || Date.now().toString();
-    try { await setDoc(doc(db, 'womenServices', id), { ...service, id: undefined }); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'womenServices'); }
+    const { id: _, ...data } = service;
+    try { await setDoc(doc(db, 'womenServices', id), data); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'womenServices'); }
   },
   async updateService(id: string, partial: Partial<ServiceProvider>) {
     try { await updateDoc(doc(db, 'womenServices', id), partial); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'womenServices'); }
@@ -154,7 +157,8 @@ export const store = {
 
   async addCommunityPost(post: CommunityPost) {
     const id = post.id || Date.now().toString();
-    try { await setDoc(doc(db, 'communityPosts', id), { ...post, userId: auth.currentUser?.uid, id: undefined }); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'communityPosts'); }
+    const { id: _, ...data } = post;
+    try { await setDoc(doc(db, 'communityPosts', id), { ...data, userId: auth.currentUser?.uid }); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'communityPosts'); }
   },
   async updateCommunityPost(id: string, partial: Partial<CommunityPost>) {
     try { await updateDoc(doc(db, 'communityPosts', id), partial); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'communityPosts'); }
@@ -187,7 +191,8 @@ export const store = {
 
   async addShop(shop: Shop) {
     const id = shop.id || Date.now().toString();
-    try { await setDoc(doc(db, 'shops', id), { ...shop, id: undefined }); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'shops'); }
+    const { id: _, ...data } = shop;
+    try { await setDoc(doc(db, 'shops', id), data); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'shops'); }
   },
   async updateShop(id: string, partial: Partial<Shop>) {
     try { await updateDoc(doc(db, 'shops', id), partial); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'shops'); }
@@ -198,7 +203,8 @@ export const store = {
 
   async addProduct(product: Product) {
     const id = product.id || Date.now().toString();
-    try { await setDoc(doc(db, 'products', id), { ...product, id: undefined }); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'products'); }
+    const { id: _, ...data } = product;
+    try { await setDoc(doc(db, 'products', id), data); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'products'); }
   },
   async updateProduct(id: string, partial: Partial<Product>) {
     try { await updateDoc(doc(db, 'products', id), partial); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'products'); }

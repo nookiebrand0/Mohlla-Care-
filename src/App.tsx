@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { LoginScreen } from "./components/LoginScreen";
 import { Dashboard } from "./components/Dashboard";
@@ -24,6 +24,9 @@ import { TermsOfService } from "./components/Terms";
 import { AIHelpCenter } from "./components/AIHelp";
 import { User, Issue, ViewState } from "./types";
 import { store, useStore } from "./store";
+
+import { auth } from "./firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 function ModeSelector({
   onSelect,
@@ -81,6 +84,62 @@ export default function App() {
   const globalState = useStore();
   const [showWelcome, setShowWelcome] = useState(false);
   const [rewardMessage, setRewardMessage] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [showPhonePrompt, setShowPhonePrompt] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      if (authUser) {
+        // Find existing user in store or create baser user
+        // We'll rely on the subscription to give us updated users, but for now instantiate
+        const loggedInUser: User = {
+          id: authUser.uid,
+          name: authUser.displayName || "User",
+          role: "user",
+          isVerified: true,
+          phone: authUser.phoneNumber || "",
+          area: "",
+          points: 0,
+        };
+        setUser(loggedInUser);
+        setCurrentView("home");
+        
+        // Check if phone number is missing
+        if (!authUser.phoneNumber) {
+          // If we synced correctly from Firestore we'd know from `globalState.users`, 
+          // but we'll show the prompt if it's missing in local state. We check `globalState` below.
+        }
+      } else {
+        setUser(null);
+      }
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Update user once users list is populated if their phone is missing
+  useEffect(() => {
+    if (user && !authLoading) {
+      // Find the robust user object (assuming store syncs it if we fetch it, wait we don't sync users collection in store currently)
+      // Actually, if user.phone is empty, let's show the prompt
+      if (!user.phone) {
+        setShowPhonePrompt(true);
+      } else {
+        setShowPhonePrompt(false);
+      }
+    }
+  }, [user, authLoading]);
+
+  const handlePhoneSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (phoneNumber.trim() && user) {
+      store.updateUser(user.id, { phone: phoneNumber.trim() });
+      setUser({ ...user, phone: phoneNumber.trim() });
+      setShowPhonePrompt(false);
+      handleRewardPoints(10, "verifying phone number");
+    }
+  };
 
   const handleLogin = (loggedInUser: User) => {
     setUser(loggedInUser);
@@ -318,6 +377,45 @@ export default function App() {
             </h2>
             <p className="text-orange-100 text-sm">We are glad you are here.</p>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Phone Number Prompt */}
+      <AnimatePresence>
+        {showPhonePrompt && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-slate-900 w-full max-w-md p-6 rounded-3xl shadow-2xl border border-gray-100 dark:border-white/10"
+            >
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Connect Your Phone</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">
+                Please add your phone number so service providers and helpers can easily contact you. You only need to do this once.
+              </p>
+              <form onSubmit={handlePhoneSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+                  <input
+                    type="tel"
+                    required
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="+91 "
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={!phoneNumber.trim()}
+                  className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50"
+                >
+                  Verify Number
+                </button>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
