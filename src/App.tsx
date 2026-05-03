@@ -282,7 +282,7 @@ export default function App() {
           />
         );
       case "profile":
-        return <UserProfile user={user!} onLogout={handleLogout} />;
+        return <UserProfile user={user!} onLogout={handleLogout} onReward={() => handleRewardPoints(50, "referring a friend")} />;
       case "privacy":
         return <PrivacyPolicy />;
       case "terms":

@@ -9,15 +9,18 @@ import {
   Settings,
   LogOut,
   Check,
-  X
+  X,
+  Share2,
+  Copy
 } from "lucide-react";
 
 interface UserProfileProps {
   user: User;
   onLogout: () => void;
+  onReward?: () => void;
 }
 
-export function UserProfile({ user: initialUser, onLogout }: UserProfileProps) {
+export function UserProfile({ user: initialUser, onLogout, onReward }: UserProfileProps) {
   const [user, setUser] = useState<User>(initialUser);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ 
@@ -144,6 +147,56 @@ export function UserProfile({ user: initialUser, onLogout }: UserProfileProps) {
             <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">
               Account Type
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <h3 className="text-xl font-bold text-white px-2 mb-4">Refer & Earn</h3>
+        <div className="bg-gradient-to-r from-blue-600/80 to-indigo-600/80 backdrop-blur-md border border-blue-500/30 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-20">
+            <Share2 className="w-24 h-24 text-white" />
+          </div>
+          <div className="relative z-10">
+            <h4 className="text-white font-bold text-lg mb-1">Invite your neighbors!</h4>
+            <p className="text-blue-100 text-sm mb-4">Get 50 points for every person who signs up using your link.</p>
+            
+            <div className="flex items-center gap-2 mb-4 bg-black/40 p-3 rounded-xl border border-white/10">
+              <span className="text-slate-300 font-mono flex-1 select-all" id="referral-code">
+                HBBPR-{user.id?.substring(0, 6).toUpperCase() || 'NEW789'}
+              </span>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(`HBBPR-${user.id?.substring(0, 6).toUpperCase() || 'NEW789'}`);
+                  alert("Referral code copied!");
+                }}
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-all flex items-center justify-center shrink-0"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+
+            <button 
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: 'Join Habibpura Community',
+                    text: `Use my referral code HBBPR-${user.id?.substring(0, 6).toUpperCase() || 'NEW789'} to get bonus points!`,
+                    url: window.location.href,
+                  }).then(() => {
+                     // Optionally reward them just for sharing
+                     if (onReward) onReward();
+                  }).catch(console.error);
+                } else {
+                  // Fallback
+                  if (onReward) onReward();
+                  alert("Thanks for sharing! (Points awarded)");
+                }
+              }}
+              className="w-full py-3 bg-white hover:bg-slate-100 text-indigo-600 font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+            >
+              <Share2 className="w-5 h-5" /> Share App Link
+            </button>
           </div>
         </div>
       </div>
