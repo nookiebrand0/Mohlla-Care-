@@ -3,8 +3,16 @@ import { motion } from "motion/react";
 import { Bot, Send, Loader2, Sparkles } from "lucide-react";
 import { GoogleGenAI } from "@google/genai";
 
-// Platform injects the API key automatically under process.env.GEMINI_API_KEY
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiClient: GoogleGenAI | null = null;
+function getAI() {
+  if (!aiClient) {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is missing. Please set it in your environment.");
+    }
+    aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return aiClient;
+}
 
 interface Message {
   role: "user" | "model";
@@ -38,6 +46,7 @@ export function AIHelpCenter() {
       const chatHistory = messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`);
       chatHistory.push(`User: ${userText}`);
       
+      const ai = getAI();
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: chatHistory.join("\n\n"),
