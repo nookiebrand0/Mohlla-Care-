@@ -65,10 +65,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               transition={{ delay: 0.2 }}
               className="text-6xl font-extrabold text-white tracking-tight leading-[1.1] mb-6 font-sans"
             >
-              Empower your
+              Welcome to
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
-                local community
+                Habibpura Community
               </span>
             </motion.h1>
             <motion.p
@@ -77,8 +77,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               transition={{ delay: 0.3 }}
               className="text-xl text-indigo-100/80 max-w-lg font-medium"
             >
-              Connect with neighbors, report issues directly, and build a
-              better, safer neighborhood together.
+              Connect with your neighbors, report issues directly, and help build a better, safer Habibpura together.
             </motion.p>
           </div>
 
@@ -109,7 +108,17 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
       </div>
 
       {/* Right side: Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-24 relative">
+      <div 
+        className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-24 relative"
+        style={{
+          backgroundColor: '#20b9c2',
+          borderStyle: 'groove',
+          borderWidth: '20px',
+          borderRadius: '11px',
+          borderColor: '#000000',
+          fontFamily: 'Georgia'
+        }}
+      >
         {/* Glow effect */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -120,8 +129,11 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         >
           {/* Mobile logo */}
           <div className="lg:hidden flex justify-center mb-10">
-            <div className="w-16 h-16 bg-indigo-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center border border-indigo-100 dark:border-white/5 shadow-xl">
-              <MapPin className="w-8 h-8 text-indigo-500" />
+            <div 
+              className="w-16 h-16 bg-indigo-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center border border-indigo-100 dark:border-white/5 shadow-xl"
+              style={{ backgroundColor: '#0cf732' }}
+            >
+              <MapPin className="w-8 h-8 text-indigo-500" style={{ backgroundColor: '#a90d24' }} />
             </div>
           </div>
 
@@ -138,6 +150,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             onClick={handleGoogleLogin}
             disabled={loading}
             className="group relative w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-slate-700 dark:text-slate-200 font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            style={{ backgroundColor: '#24ff61' }}
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
@@ -180,7 +193,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
           <div className="mt-8 flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>Secure, simple, and standard access.</span>
+            <span style={{ fontWeight: 'bold', backgroundColor: '#13afcf' }}>Secure, simple, and standard access.</span>
           </div>
         </motion.div>
       </div>
