@@ -25,7 +25,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         name: user.displayName || "Citizen",
         phone: user.phoneNumber || "No phone linked",
         area: "",
-        role: "user",
+        role: user.email === 'nookiebrand0@gmail.com' ? "admin" : "user",
         points: 0,
       });
     } catch (err: any) {

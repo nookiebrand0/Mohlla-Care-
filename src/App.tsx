@@ -97,7 +97,7 @@ export default function App() {
         const loggedInUser: User = {
           id: authUser.uid,
           name: authUser.displayName || "User",
-          role: "user",
+          role: authUser.email === 'nookiebrand0@gmail.com' ? "admin" : "user",
           isVerified: true,
           phone: authUser.phoneNumber || "",
           area: "",
@@ -232,6 +232,7 @@ export default function App() {
       if (!prev) return prev;
       const newPoints = (prev.points || 0) + amount;
       store.updateUser(prev.id, { points: newPoints });
+      store.addActivity(reason, `Earned ${amount} points`, amount);
       return { ...prev, points: Math.max(0, newPoints) };
     });
     setRewardMessage(`You earned ${amount} points for ${reason}!`);
@@ -282,7 +283,9 @@ export default function App() {
           />
         );
       case "profile":
-        return <UserProfile user={user!} onLogout={handleLogout} onReward={() => handleRewardPoints(50, "referring a friend")} />;
+        return <UserProfile user={user!} onLogout={handleLogout} onReward={() => handleRewardPoints(50, "referring a friend")} onAdminClick={() => setCurrentView("admin")} />;
+      case "admin":
+        return <AdminPanel />;
       case "privacy":
         return <PrivacyPolicy />;
       case "terms":

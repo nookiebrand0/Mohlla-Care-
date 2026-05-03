@@ -31,13 +31,14 @@ export function AdminPanel() {
   });
 
   const tabs = [
-    { id: "Issues", icon: AlertTriangle, count: state.issues.length },
-    { id: "Services", icon: HeartHandshake, count: state.womenServices.length },
-    { id: "Jobs", icon: Briefcase, count: state.jobs.length },
-    { id: "Community", icon: Users, count: state.communityPosts.length },
-    { id: "Shop", icon: Store, count: state.shops.length },
-    { id: "Directory", icon: Phone, count: state.services.length },
-    { id: "Leaders", icon: Trophy, count: state.leaderboard.length },
+    { id: "Users", icon: Users, count: state.users?.length || 0 },
+    { id: "Issues", icon: AlertTriangle, count: state.issues?.length || 0 },
+    { id: "Services", icon: HeartHandshake, count: state.womenServices?.length || 0 },
+    { id: "Jobs", icon: Briefcase, count: state.jobs?.length || 0 },
+    { id: "Community", icon: Users, count: state.communityPosts?.length || 0 },
+    { id: "Shop", icon: Store, count: state.shops?.length || 0 },
+    { id: "Directory", icon: Phone, count: state.services?.length || 0 },
+    { id: "Rides", icon: AlertTriangle, count: state.rides?.length || 0 },
   ];
 
   const handleAction = (action: string, item: any = null, payload: any = null) => {
@@ -81,6 +82,40 @@ export function AdminPanel() {
          store.updateJob(actionType.payload.id, editForm);
       } else if (isDelete && actionType?.payload) {
          store.deleteJob(actionType.payload.id);
+      }
+    } else if (activeTab === 'Users') {
+      if (isEdit && actionType?.payload) {
+         store.updateUser(actionType.payload.id, editForm);
+      }
+    } else if (activeTab === 'Shop') {
+      if (isAdd) {
+         store.addShop({ ...editForm, id: Date.now().toString() } as any);
+      } else if (isEdit && actionType?.payload) {
+         store.updateShop(actionType.payload.id, editForm);
+      } else if (isDelete && actionType?.payload) {
+         store.deleteShop(actionType.payload.id);
+      }
+    } else if (activeTab === 'Community') {
+      if (isAdd) {
+         store.addCommunityPost({ ...editForm, id: Date.now().toString() } as any);
+      } else if (isEdit && actionType?.payload) {
+         store.updateCommunityPost(actionType.payload.id, editForm);
+      } else if (isDelete && actionType?.payload) {
+         store.deleteCommunityPost(actionType.payload.id);
+      }
+    } else if (activeTab === 'Directory') {
+      if (isAdd) {
+         store.addServiceContact({ ...editForm, id: Date.now().toString() } as any);
+      } else if (isEdit && actionType?.payload) {
+         store.updateServiceContact(actionType.payload.id, editForm);
+      } else if (isDelete && actionType?.payload) {
+         store.deleteServiceContact(actionType.payload.id);
+      }
+    } else if (activeTab === 'Rides') {
+      if (isEdit && actionType?.payload) {
+         store.updateRide(actionType.payload.id, editForm);
+      } else if (isDelete && actionType?.payload) {
+         store.deleteRide(actionType.payload.id);
       }
     }
 
@@ -128,6 +163,70 @@ export function AdminPanel() {
             </div>
           </div>
         ));
+      case 'Users':
+        return state.users?.map((u: any) => (
+          <div key={u.id} className="flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/10 mb-3">
+            <div>
+              <div className="font-bold text-white">{u.name || (u.phone || 'Anonymous')}</div>
+              <div className="text-sm text-slate-400">Points: {u.points || 0}</div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleAction('Edit', u.name, u)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/40"><Edit3 className="w-4 h-4"/></button>
+            </div>
+          </div>
+        )) || [];
+      case 'Shop':
+        return state.shops?.map((s: any) => (
+          <div key={s.id} className="flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/10 mb-3">
+            <div>
+              <div className="font-bold text-white">{s.name}</div>
+              <div className="text-sm text-slate-400">{s.category}</div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleAction('Edit', s.name, s)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/40"><Edit3 className="w-4 h-4"/></button>
+              <button onClick={() => handleAction('Delete', s.name, s)} className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/40"><Trash2 className="w-4 h-4"/></button>
+            </div>
+          </div>
+        )) || [];
+      case 'Community':
+        return state.communityPosts?.map((p: any) => (
+          <div key={p.id} className="flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/10 mb-3">
+            <div>
+              <div className="font-bold text-white truncate max-w-[200px]">{p.content}</div>
+              <div className="text-sm text-slate-400">By {p.authorName || 'Anon'}</div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleAction('Edit', p.content, p)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/40"><Edit3 className="w-4 h-4"/></button>
+              <button onClick={() => handleAction('Delete', p.content, p)} className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/40"><Trash2 className="w-4 h-4"/></button>
+            </div>
+          </div>
+        )) || [];
+      case 'Directory':
+        return state.services?.map((d: any) => (
+          <div key={d.id} className="flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/10 mb-3">
+            <div>
+              <div className="font-bold text-white">{d.name}</div>
+              <div className="text-sm text-slate-400">{d.category}</div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleAction('Edit', d.name, d)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/40"><Edit3 className="w-4 h-4"/></button>
+              <button onClick={() => handleAction('Delete', d.name, d)} className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/40"><Trash2 className="w-4 h-4"/></button>
+            </div>
+          </div>
+        )) || [];
+      case 'Rides':
+        return state.rides?.map((r: any) => (
+          <div key={r.id} className="flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/10 mb-3">
+            <div>
+              <div className="font-bold text-white">{r.pickup} → {r.dropoff}</div>
+              <div className="text-sm text-slate-400">Status: {r.status}</div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleAction('Edit', r.id, r)} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/40"><Edit3 className="w-4 h-4"/></button>
+              <button onClick={() => handleAction('Delete', r.id, r)} className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/40"><Trash2 className="w-4 h-4"/></button>
+            </div>
+          </div>
+        )) || [];
       default:
         return (
           <div className="bg-black/20 p-8 rounded-2xl border border-white/5 text-center flex flex-col items-center justify-center">

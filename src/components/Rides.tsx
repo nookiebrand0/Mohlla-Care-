@@ -2,17 +2,25 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Bike, MapPin, Search } from 'lucide-react';
 
+import { store } from '../store';
+
 export function Rides() {
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [rideFound, setRideFound] = useState(false);
+  const [currentRideId, setCurrentRideId] = useState<string | null>(null);
 
   const handleSearch = () => {
     setIsSearching(true);
+    const id = Date.now().toString();
+    setCurrentRideId(id);
+    store.addRide({ id, pickup, dropoff });
+    
     setTimeout(() => {
       setIsSearching(false);
       setRideFound(true);
+      store.updateRide(id, { status: 'driver_found', driverName: 'Rahul', fare: 35, ETA: '2 mins' });
     }, 2000);
   };
 
@@ -85,7 +93,12 @@ export function Rides() {
               </div>
             </div>
 
-            <button onClick={() => { setRideFound(false); setPickup(''); setDropoff(''); }} className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold transition-all">
+            <button onClick={() => { 
+                setRideFound(false); 
+                setPickup(''); 
+                setDropoff(''); 
+                if (currentRideId) store.updateRide(currentRideId, { status: 'cancelled' });
+              }} className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold transition-all">
               Cancel Ride
             </button>
           </motion.div>

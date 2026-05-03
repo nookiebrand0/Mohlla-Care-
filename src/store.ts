@@ -39,6 +39,8 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   throw new Error(JSON.stringify(errInfo));
 }
 
+const stripUndefined = (obj: any) => Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
+
 // Initial empty states
 const STORE = {
   issues: [] as Issue[],
@@ -49,7 +51,10 @@ const STORE = {
   products: [] as Product[],
   communityPosts: [] as CommunityPost[],
   leaderboard: [] as LeaderboardEntry[],
-  sliderImages: [] as string[]
+  sliderImages: [] as string[],
+  users: [] as any[],
+  rides: [] as any[],
+  activities: [] as any[]
 };
 
 // Simple pub-sub
@@ -80,10 +85,13 @@ function startSubscriptions() {
     attach('shops', 'shops');
     attach('products', 'products');
     attach('communityPosts', 'communityPosts');
+    attach('rides', 'rides');
+    attach('activities', 'activities');
     
     // Custom logic for leaderboard by listening to users collection
     unsubscribes.push(onSnapshot(collection(db, 'users'), (snap) => {
       const users = snap.docs.map(d => ({ id: d.id, ...d.data() as any }));
+      STORE.users = users;
       STORE.leaderboard = users.map(u => ({
         id: u.id,
         name: u.name || 'Unknown',
@@ -120,15 +128,16 @@ export const store = {
     const id = issue.id || Date.now().toString();
     const docRef = doc(db, 'issues', id);
     const { id: _, ...issueWithoutId } = issue;
+    const cleanData = Object.fromEntries(Object.entries({ ...issueWithoutId, userId: auth.currentUser?.uid }).filter(([_, v]) => v !== undefined));
     try {
-      await setDoc(docRef, { ...issueWithoutId, userId: auth.currentUser?.uid });
+      await setDoc(docRef, cleanData);
     } catch(err) {
       handleFirestoreError(err, OperationType.CREATE, 'issues');
     }
   },
   async updateIssue(id: string, partial: Partial<Issue>) {
     try {
-      await updateDoc(doc(db, 'issues', id), partial);
+      await updateDoc(doc(db, 'issues', id), stripUndefined(partial));
     } catch(err) {
       handleFirestoreError(err, OperationType.UPDATE, 'issues');
     }
@@ -145,11 +154,11 @@ export const store = {
     const id = job.id || Date.now().toString();
     const { id: _, ...data } = job;
     try {
-      await setDoc(doc(db, 'jobs', id), data);
+      await setDoc(doc(db, 'jobs', id), stripUndefined(data));
     } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'jobs'); }
   },
   async updateJob(id: string, partial: Partial<Job>) {
-    try { await updateDoc(doc(db, 'jobs', id), partial); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'jobs'); }
+    try { await updateDoc(doc(db, 'jobs', id), stripUndefined(partial)); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'jobs'); }
   },
   async deleteJob(id: string) {
     try { await deleteDoc(doc(db, 'jobs', id)); } catch(err) { handleFirestoreError(err, OperationType.DELETE, 'jobs'); }
@@ -158,22 +167,34 @@ export const store = {
   async addService(service: ServiceProvider) {
     const id = service.id || Date.now().toString();
     const { id: _, ...data } = service;
-    try { await setDoc(doc(db, 'womenServices', id), data); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'womenServices'); }
+    try { await setDoc(doc(db, 'womenServices', id), stripUndefined(data)); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'womenServices'); }
   },
   async updateService(id: string, partial: Partial<ServiceProvider>) {
-    try { await updateDoc(doc(db, 'womenServices', id), partial); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'womenServices'); }
+    try { await updateDoc(doc(db, 'womenServices', id), stripUndefined(partial)); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'womenServices'); }
   },
   async deleteService(id: string) {
      try { await deleteDoc(doc(db, 'womenServices', id)); } catch(err) { handleFirestoreError(err, OperationType.DELETE, 'womenServices'); }
   },
 
+  async addServiceContact(contact: ServiceContact) {
+    const id = contact.id || Date.now().toString();
+    const { id: _, ...data } = contact;
+    try { await setDoc(doc(db, 'services', id), stripUndefined(data)); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'services'); }
+  },
+  async updateServiceContact(id: string, partial: Partial<ServiceContact>) {
+    try { await updateDoc(doc(db, 'services', id), stripUndefined(partial)); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'services'); }
+  },
+  async deleteServiceContact(id: string) {
+    try { await deleteDoc(doc(db, 'services', id)); } catch(err) { handleFirestoreError(err, OperationType.DELETE, 'services'); }
+  },
+
   async addCommunityPost(post: CommunityPost) {
     const id = post.id || Date.now().toString();
     const { id: _, ...data } = post;
-    try { await setDoc(doc(db, 'communityPosts', id), { ...data, userId: auth.currentUser?.uid }); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'communityPosts'); }
+    try { await setDoc(doc(db, 'communityPosts', id), stripUndefined({ ...data, userId: auth.currentUser?.uid })); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'communityPosts'); }
   },
   async updateCommunityPost(id: string, partial: Partial<CommunityPost>) {
-    try { await updateDoc(doc(db, 'communityPosts', id), partial); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'communityPosts'); }
+    try { await updateDoc(doc(db, 'communityPosts', id), stripUndefined(partial)); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'communityPosts'); }
   },
   async deleteCommunityPost(id: string) {
     try { await deleteDoc(doc(db, 'communityPosts', id)); } catch(err) { handleFirestoreError(err, OperationType.DELETE, 'communityPosts'); }
@@ -204,10 +225,10 @@ export const store = {
   async addShop(shop: Shop) {
     const id = shop.id || Date.now().toString();
     const { id: _, ...data } = shop;
-    try { await setDoc(doc(db, 'shops', id), data); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'shops'); }
+    try { await setDoc(doc(db, 'shops', id), stripUndefined(data)); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'shops'); }
   },
   async updateShop(id: string, partial: Partial<Shop>) {
-    try { await updateDoc(doc(db, 'shops', id), partial); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'shops'); }
+    try { await updateDoc(doc(db, 'shops', id), stripUndefined(partial)); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'shops'); }
   },
   async deleteShop(id: string) {
     try { await deleteDoc(doc(db, 'shops', id)); } catch(err) { handleFirestoreError(err, OperationType.DELETE, 'shops'); }
@@ -216,13 +237,38 @@ export const store = {
   async addProduct(product: Product) {
     const id = product.id || Date.now().toString();
     const { id: _, ...data } = product;
-    try { await setDoc(doc(db, 'products', id), data); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'products'); }
+    try { await setDoc(doc(db, 'products', id), stripUndefined(data)); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'products'); }
   },
   async updateProduct(id: string, partial: Partial<Product>) {
-    try { await updateDoc(doc(db, 'products', id), partial); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'products'); }
+    try { await updateDoc(doc(db, 'products', id), stripUndefined(partial)); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'products'); }
   },
   async deleteProduct(id: string) {
     try { await deleteDoc(doc(db, 'products', id)); } catch(err) { handleFirestoreError(err, OperationType.DELETE, 'products'); }
+  },
+
+  async addActivity(title: string, detail: string, points?: number) {
+    const id = Date.now().toString();
+    try { 
+      await setDoc(doc(db, 'activities', id), stripUndefined({ 
+        title, 
+        detail, 
+        points: points || 0, 
+        userId: auth.currentUser?.uid, 
+        createdAt: new Date().toISOString() 
+      })); 
+    } catch(err) { console.error('Error logging activity: ', err); }
+  },
+
+  async addRide(ride: any) {
+    const id = ride.id || Date.now().toString();
+    const { id: _, ...data } = ride;
+    try { await setDoc(doc(db, 'rides', id), stripUndefined({ ...data, userId: auth.currentUser?.uid, status: 'searching', createdAt: new Date().toISOString() })); } catch(err) { handleFirestoreError(err, OperationType.CREATE, 'rides'); }
+  },
+  async updateRide(id: string, partial: any) {
+    try { await updateDoc(doc(db, 'rides', id), stripUndefined(partial)); } catch(err) { handleFirestoreError(err, OperationType.UPDATE, 'rides'); }
+  },
+  async deleteRide(id: string) {
+    try { await deleteDoc(doc(db, 'rides', id)); } catch(err) { handleFirestoreError(err, OperationType.DELETE, 'rides'); }
   },
 };
 

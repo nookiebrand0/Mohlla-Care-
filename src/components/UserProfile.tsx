@@ -14,19 +14,25 @@ import {
   Copy
 } from "lucide-react";
 
+import { useStore, store } from "../store";
+
 interface UserProfileProps {
   user: User;
   onLogout: () => void;
   onReward?: () => void;
+  onAdminClick?: () => void;
 }
 
-export function UserProfile({ user: initialUser, onLogout, onReward }: UserProfileProps) {
+export function UserProfile({ user: initialUser, onLogout, onReward, onAdminClick }: UserProfileProps) {
   const [user, setUser] = useState<User>(initialUser);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ 
     name: user.name || "", 
     phone: user.phone || "" 
   });
+  
+  const state = useStore();
+  const userActivities = state.activities?.filter(a => a.userId === user.id).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) || [];
 
   const handleSave = () => {
     setUser({ ...user, name: editForm.name, phone: editForm.phone });
@@ -204,37 +210,36 @@ export function UserProfile({ user: initialUser, onLogout, onReward }: UserProfi
       <div className="mb-8">
         <h3 className="text-xl font-bold text-white px-2 mb-4">Activity History</h3>
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-sm p-2">
-          {/* Mock Activity Data - in a real app this would map over filtered store data */}
-          <div className="p-3 border-b border-white/10 flex items-center justify-between">
-            <div>
-              <div className="text-white font-semibold">Reported Issue: Garbage</div>
-              <div className="text-xs text-slate-400">2 days ago • +10 points</div>
-            </div>
-          </div>
-          <div className="p-3 border-b border-white/10 flex items-center justify-between">
-            <div>
-              <div className="text-white font-semibold">Called Plumber</div>
-              <div className="text-xs text-slate-400">1 week ago</div>
-            </div>
-          </div>
-          <div className="p-3 border-b border-white/10 flex items-center justify-between">
-            <div>
-              <div className="text-white font-semibold">Commented on Community</div>
-              <div className="text-xs text-slate-400">1 week ago • +20 points</div>
-            </div>
-          </div>
-          <div className="p-3 flex items-center justify-between">
-            <div>
-              <div className="text-white font-semibold">Ordered Groceries</div>
-              <div className="text-xs text-slate-400">2 weeks ago</div>
-            </div>
-          </div>
+          {userActivities.length === 0 ? (
+             <div className="p-4 text-center text-slate-400">No activity yet. Check out the community!</div>
+          ) : userActivities.map((act: any) => (
+             <div key={act.id} className="p-3 border-b border-white/10 flex items-center justify-between last:border-0">
+               <div>
+                 <div className="text-white font-semibold">{act.title}</div>
+                 <div className="text-xs text-slate-400">
+                    {new Date(act.createdAt).toLocaleDateString()} • {act.points > 0 ? `+${act.points} points` : act.detail}
+                 </div>
+               </div>
+             </div>
+          ))}
         </div>
       </div>
 
       <div className="space-y-4">
         <h3 className="text-xl font-bold text-white px-2 mb-4">Settings</h3>
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-sm">
+          {user.role === 'admin' && (
+            <button
+              onClick={onAdminClick}
+              className="w-full flex items-center justify-between p-4 text-white hover:bg-white/5 transition-colors border-b border-white/10"
+            >
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="w-5 h-5 text-indigo-400" />
+                <span className="font-medium">Admin Panel</span>
+              </div>
+              <Check className="w-4 h-4 text-slate-500 opacity-0" />
+            </button>
+          )}
           <button
             onClick={() => document.documentElement.classList.toggle('dark')}
             className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"

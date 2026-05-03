@@ -111,4 +111,5 @@ export type ViewState =
   | "terms"
   | "ai-help"
   | "notifications"
+  | "admin"
   | "rides";

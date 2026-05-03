@@ -115,8 +115,8 @@ service cloud.firestore {
 
     // USERS COLLECTION
     match /users/{userId} {
-      allow get: if isValidId(userId) && isSignedIn() && (userId == request.auth.uid || isAdmin());
-      allow list: if isAdmin();
+      allow get: if isValidId(userId) && isSignedIn();
+      allow list: if isSignedIn();
       
       allow create: if isValidId(userId) && userId == request.auth.uid && isValidUser(incoming());
       
@@ -201,6 +201,16 @@ service cloud.firestore {
       allow create: if isValidId(userId) && isValidId(issueId) && isSignedIn() && userId == request.auth.uid && 
                     incoming().keys().hasOnly(['timestamp']) && incoming().timestamp is timestamp;
       allow delete: if isValidId(userId) && isValidId(issueId) && isSignedIn() && userId == request.auth.uid;
+    }
+
+    match /activities/{activityId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /rides/{rideId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
     }
   }
 }
