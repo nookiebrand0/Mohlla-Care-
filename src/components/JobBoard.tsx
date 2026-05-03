@@ -17,6 +17,7 @@ export function JobBoard({ onReward }: JobBoardProps) {
   const [filter, setFilter] = useState("All");
   const [applied, setApplied] = useState<Record<string, boolean>>({});
   const [showModal, setShowModal] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState<string | null>(null);
   const state = useStore();
 
   const types = ["All", "Part-time", "Work from Home", "Full-time"];
@@ -34,8 +35,13 @@ export function JobBoard({ onReward }: JobBoardProps) {
     (j) => filter === "All" || j.type === filter,
   );
 
-  const handleApply = (id: string) => {
+  const handleApplyClick = (id: string) => {
+    setShowApplyModal(id);
+  };
+
+  const submitApplication = (id: string) => {
     setApplied((prev) => ({ ...prev, [id]: true }));
+    setShowApplyModal(null);
   };
 
   return (
@@ -104,7 +110,7 @@ export function JobBoard({ onReward }: JobBoardProps) {
                 </div>
               ) : (
                 <button
-                  onClick={() => handleApply(job.id)}
+                  onClick={() => handleApplyClick(job.id)}
                   className="bg-blue-500 hover:bg-blue-600 text-white border border-transparent font-semibold py-2 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 text-sm w-full sm:w-auto text-center"
                 >
                   Apply Now
@@ -169,6 +175,51 @@ export function JobBoard({ onReward }: JobBoardProps) {
                   className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold transition-all flex-1"
                 >
                   Post Job
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Apply modal */}
+      <AnimatePresence>
+        {showApplyModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-slate-900 border border-white/10 p-6 rounded-2xl max-w-sm w-full shadow-2xl relative"
+            >
+              <h2 className="text-xl font-bold text-white mb-2">Apply for Job</h2>
+              <p className="text-slate-400 text-sm mb-6">
+                Please provide your details below. The employer will contact you.
+              </p>
+              
+              <div className="space-y-3 mb-6">
+                 <input type="text" placeholder="Full Name" className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white outline-none" required />
+                 <input type="tel" placeholder="Phone Number" className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white outline-none" required />
+                 <textarea placeholder="Experience or Skills..." rows={3} className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white outline-none"></textarea>
+              </div>
+
+              <div className="flex gap-2 justify-end mt-4">
+                <button 
+                  onClick={() => setShowApplyModal(null)}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg font-semibold transition-all flex-1"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => submitApplication(showApplyModal)}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold transition-all flex-1"
+                >
+                  Submit
                 </button>
               </div>
             </motion.div>

@@ -110,4 +110,5 @@ export type ViewState =
   | "privacy"
   | "terms"
   | "ai-help"
-  | "notifications";
+  | "notifications"
+  | "rides";

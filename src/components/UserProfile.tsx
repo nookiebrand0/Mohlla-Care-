@@ -148,8 +148,39 @@ export function UserProfile({ user: initialUser, onLogout }: UserProfileProps) {
         </div>
       </div>
 
+      <div className="mb-8">
+        <h3 className="text-xl font-bold text-white px-2 mb-4">Activity History</h3>
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-sm p-2">
+          {/* Mock Activity Data - in a real app this would map over filtered store data */}
+          <div className="p-3 border-b border-white/10 flex items-center justify-between">
+            <div>
+              <div className="text-white font-semibold">Reported Issue: Garbage</div>
+              <div className="text-xs text-slate-400">2 days ago • +10 points</div>
+            </div>
+          </div>
+          <div className="p-3 border-b border-white/10 flex items-center justify-between">
+            <div>
+              <div className="text-white font-semibold">Called Plumber</div>
+              <div className="text-xs text-slate-400">1 week ago</div>
+            </div>
+          </div>
+          <div className="p-3 border-b border-white/10 flex items-center justify-between">
+            <div>
+              <div className="text-white font-semibold">Commented on Community</div>
+              <div className="text-xs text-slate-400">1 week ago • +20 points</div>
+            </div>
+          </div>
+          <div className="p-3 flex items-center justify-between">
+            <div>
+              <div className="text-white font-semibold">Ordered Groceries</div>
+              <div className="text-xs text-slate-400">2 weeks ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-white px-2 mt-8 mb-4">Settings</h3>
+        <h3 className="text-xl font-bold text-white px-2 mb-4">Settings</h3>
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-sm">
           <button
             onClick={() => document.documentElement.classList.toggle('dark')}

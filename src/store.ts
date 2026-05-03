@@ -81,6 +81,18 @@ function startSubscriptions() {
     attach('products', 'products');
     attach('communityPosts', 'communityPosts');
     
+    // Custom logic for leaderboard by listening to users collection
+    unsubscribes.push(onSnapshot(collection(db, 'users'), (snap) => {
+      const users = snap.docs.map(d => ({ id: d.id, ...d.data() as any }));
+      STORE.leaderboard = users.map(u => ({
+        id: u.id,
+        name: u.name || 'Unknown',
+        points: u.points || 0,
+        badge: u.points > 1000 ? 'Hero' : u.points > 500 ? 'Helper' : 'Citizen'
+      }));
+      emit();
+    }, (err) => handleFirestoreError(err, OperationType.LIST, 'users')));
+    
   } catch (err) {
     console.error("Failed to start subscriptions:", err);
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { HomeSlider } from './HomeSlider';
-import { LayoutGrid, HeartHandshake, Briefcase, Store, Users, Map, Phone, Trophy, Sun } from 'lucide-react';
+import { LayoutGrid, HeartHandshake, Briefcase, Store, Users, Map, Phone, Trophy, Sun, Bike, UserPlus } from 'lucide-react';
 import { ViewState } from '../types';
 
 interface HomeProps {
@@ -11,6 +11,7 @@ export function Home({ onNavigate }: HomeProps) {
   const sections = [
     { id: "dashboard", icon: LayoutGrid, label: "Problems", color: "bg-red-500" },
     { id: "services", icon: HeartHandshake, label: "Services", color: "bg-pink-500" },
+    { id: "rides", icon: Bike, label: "Rides (Rapido)", color: "bg-green-500" },
     { id: "jobs", icon: Briefcase, label: "Jobs", color: "bg-blue-500" },
     { id: "shopping", icon: Store, label: "Shop", color: "bg-emerald-500" },
     { id: "community", icon: Users, label: "Community", color: "bg-purple-500" },
@@ -26,6 +27,21 @@ export function Home({ onNavigate }: HomeProps) {
       <div className="mb-6 mt-8">
         <h2 className="text-xl font-bold text-white mb-2">Explore Neighborhood</h2>
         <p className="text-sm text-slate-400">Everything you need, right here.</p>
+      </div>
+
+      <div className="mb-6">
+        <button onClick={() => onNavigate('directory' as ViewState)} className="w-full bg-gradient-to-r from-red-600 to-red-500 rounded-3xl p-6 relative overflow-hidden shadow-2xl hover:scale-[1.02] transition-transform text-left">
+          <div className="absolute top-0 right-0 p-4 opacity-20">
+            <UserPlus className="w-24 h-24 text-white" />
+          </div>
+          <h2 className="text-3xl font-black text-white mb-2 relative z-10 uppercase tracking-wide">Local Helper</h2>
+          <p className="text-red-100 text-lg mb-4 relative z-10">Emergency or need quick help?</p>
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl text-white font-bold relative z-10 border border-white/30">
+            <Phone className="w-5 h-5" />
+            <span>+91 98765 43210</span>
+          </div>
+          <p className="text-xs text-red-100 mt-3 relative z-10">* Click to see all active local helpers</p>
+        </button>
       </div>
 
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 md:gap-6">

@@ -19,6 +19,7 @@ import { CommunityForum } from "./components/CommunityForum";
 import { UserProfile } from "./components/UserProfile";
 import { AdminPanel } from "./components/AdminPanel";
 import { Home } from "./components/Home";
+import { Rides } from "./components/Rides";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
 import { TermsOfService } from "./components/Terms";
 import { AIHelpCenter } from "./components/AIHelp";
@@ -118,18 +119,30 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Update user once users list is populated if their phone is missing
   useEffect(() => {
+    let timer: NodeJS.Timeout;
     if (user && !authLoading) {
-      // Find the robust user object (assuming store syncs it if we fetch it, wait we don't sync users collection in store currently)
-      // Actually, if user.phone is empty, let's show the prompt
       if (!user.phone) {
-        setShowPhonePrompt(true);
+        timer = setTimeout(() => {
+          setShowPhonePrompt(true);
+        }, 60000); // 1 minute delay
       } else {
         setShowPhonePrompt(false);
       }
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [user, authLoading]);
+
+  // Handle Notifications
+  useEffect(() => {
+    if (user && "Notification" in window) {
+      if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+      }
+    }
+  }, [user]);
 
   const handlePhoneSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,6 +212,7 @@ export default function App() {
     };
 
     store.addIssue(newIssue);
+    handleRewardPoints(20, "reporting an issue");
     setCurrentView("dashboard");
   };
 
@@ -245,6 +259,8 @@ export default function App() {
         );
       case "map":
         return <LocalMap />;
+      case "rides":
+        return <Rides />;
       case "shopping":
         return <Shopping />;
       case "leaderboard":
