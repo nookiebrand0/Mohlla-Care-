@@ -48,7 +48,7 @@ export function AIHelpCenter() {
       
       const ai = getAI();
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-2.0-flash",
         contents: chatHistory.join("\n\n"),
         config: {
           systemInstruction: "You are a helpful AI support agent for a local community application. The app allows users to report civic issues, find local services, apply for jobs, use an SOS emergency feature, and interact in a community forum. Keep your responses concise and strictly in Hindi. Start directly with the answer."
