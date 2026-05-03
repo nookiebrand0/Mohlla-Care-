@@ -6,10 +6,11 @@ import { GoogleGenAI } from "@google/genai";
 let aiClient: GoogleGenAI | null = null;
 function getAI() {
   if (!aiClient) {
-    if (!process.env.GEMINI_API_KEY) {
+    const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
       throw new Error("GEMINI_API_KEY is missing. Please set it in your environment.");
     }
-    aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    aiClient = new GoogleGenAI({ apiKey });
   }
   return aiClient;
 }
@@ -48,7 +49,7 @@ export function AIHelpCenter() {
       
       const ai = getAI();
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-3-flash-preview",
         contents: chatHistory.join("\n\n"),
         config: {
           systemInstruction: "You are a helpful AI support agent for a local community application. The app allows users to report civic issues, find local services, apply for jobs, use an SOS emergency feature, and interact in a community forum. Keep your responses concise and strictly in Hindi. Start directly with the answer."
@@ -57,9 +58,13 @@ export function AIHelpCenter() {
 
       const modelReply = response.text || "मुझे माफ़ करें, मैं अभी कुछ समझ नहीं पाया। कृपया फिर से पूछें।";
       setMessages((prev) => [...prev, { role: "model", text: modelReply }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI Error:", error);
-      setMessages((prev) => [...prev, { role: "model", text: "माफ़ करें, अभी कोई नेटवर्क समस्या है। कृपया थोड़ी देर बाद फिर प्रयास करें।" }]);
+      let errorMessage = "माफ़ करें, अभी कोई नेटवर्क समस्या है। कृपया थोड़ी देर बाद फिर प्रयास करें।";
+      if (error?.message?.includes("GEMINI_API_KEY is missing")) {
+         errorMessage = "API कुंजी (API Key) सेट नहीं है। कृपया Netlify या अपने प्लेटफ़ॉर्म पर VITE_GEMINI_API_KEY सेट करें।";
+      }
+      setMessages((prev) => [...prev, { role: "model", text: errorMessage }]);
     } finally {
       setIsLoading(false);
     }
