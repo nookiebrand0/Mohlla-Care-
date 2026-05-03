@@ -13,7 +13,16 @@ export function ServiceMarketplace({ onReward }: ServiceMarketplaceProps) {
   const categories = ["All", "Silai", "Makeup", "Tiffin", "Tuition", "Other"];
   const state = useStore();
 
-  const filtered = state.womenServices.filter(
+  const dummyServices: any[] = [
+    { id: "s1", name: "Radha's Silai Center", serviceType: "Silai", rating: 4.8, description: "Expert tailoring and alterations.", price: "Starts ₹50", phone: "9876543201" },
+    { id: "s2", name: "Priya Bridal Makeup", serviceType: "Makeup", rating: 4.9, description: "Professional makeup artist for party out.", price: "Starts ₹500", phone: "9876543202" },
+    { id: "s3", name: "Home Cooked Tiffin", serviceType: "Tiffin", rating: 4.7, description: "Healthy meals delivered to your door.", price: "₹100/meal", phone: "9876543203" },
+    { id: "s4", name: "Math Tutors 10th-12th", serviceType: "Tuition", rating: 4.5, description: "Evening math classes.", price: "₹1000/mo", phone: "9876543204" }
+  ];
+
+  const currentServices = state.womenServices.length > 0 ? state.womenServices : dummyServices;
+
+  const filtered = currentServices.filter(
     (s) => filter === "All" || s.serviceType === filter,
   );
 

@@ -22,6 +22,7 @@ import { Home } from "./components/Home";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
 import { TermsOfService } from "./components/Terms";
 import { AIHelpCenter } from "./components/AIHelp";
+import { Notifications } from "./components/Notifications";
 import { User, Issue, ViewState } from "./types";
 import { store, useStore } from "./store";
 
@@ -78,7 +79,6 @@ function ModeSelector({
 }
 
 export default function App() {
-  const [appMode, setAppMode] = useState<"user" | "admin" | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<ViewState>("login");
   const globalState = useStore();
@@ -224,35 +224,6 @@ export default function App() {
     setTimeout(() => setRewardMessage(null), 3000);
   };
 
-  if (!appMode) {
-    return <ModeSelector onSelect={setAppMode} />;
-  }
-
-  // Admin App
-  if (appMode === "admin") {
-    return (
-      <div className="font-sans text-white bg-slate-900 min-h-screen">
-        <header className="bg-slate-950 p-4 border-b border-white/10 flex items-center justify-between">
-          <div className="font-bold text-xl flex items-center gap-2">
-            <span className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-              🛡️
-            </span>
-            Admin Portal
-          </div>
-          <button
-            onClick={() => setAppMode(null)}
-            className="text-slate-400 hover:text-white px-3 py-1 rounded-lg bg-white/5 text-sm font-semibold"
-          >
-            Exit Admin
-          </button>
-        </header>
-        <main className="p-4 md:p-8 max-w-[1200px] mx-auto">
-          <AdminPanel />
-        </main>
-      </div>
-    );
-  }
-
   const renderContent = () => {
     switch (currentView) {
       case "home":
@@ -302,6 +273,8 @@ export default function App() {
         return <TermsOfService />;
       case "ai-help":
         return <AIHelpCenter />;
+      case "notifications":
+        return <Notifications />;
       default:
         return null;
     }

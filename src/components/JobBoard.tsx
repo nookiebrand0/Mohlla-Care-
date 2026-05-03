@@ -21,7 +21,16 @@ export function JobBoard({ onReward }: JobBoardProps) {
 
   const types = ["All", "Part-time", "Work from Home", "Full-time"];
 
-  const filtered = state.jobs.filter(
+  const dummyJobs: any[] = [
+    { id: "j1", title: "Construction Worker", description: "Looking for 5 workers for a new site.", type: "Part-time", company: "Ramesh Singh", salary: "₹500/day", contact: "9876543210" },
+    { id: "j2", title: "Plumber Needed", description: "Urgent fix required in Block C.", type: "Part-time", company: "Amit", salary: "₹800/job", contact: "9876543211" },
+    { id: "j3", title: "Data Entry", description: "Remote data entry work.", type: "Work from Home", company: "Tech Services", salary: "₹10k/month", contact: "9876543212" },
+    { id: "j4", title: "Electrician", description: "House wiring project.", type: "Full-time", company: "Suresh", salary: "₹15k/month", contact: "9876543213" }
+  ];
+
+  const currentJobs = state.jobs.length > 0 ? state.jobs : dummyJobs;
+
+  const filtered = currentJobs.filter(
     (j) => filter === "All" || j.type === filter,
   );
 

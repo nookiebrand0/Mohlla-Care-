@@ -21,6 +21,22 @@ export function Shopping() {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const state = useStore();
 
+  const dummyShops: Shop[] = [
+    { id: "sh1", name: "Gupta General Store", category: "Grocery", rating: 4.8, isOpen: true },
+    { id: "sh2", name: "Suresh Pharmacy", category: "Medical", rating: 4.9, isOpen: true },
+    { id: "sh3", name: "Sharma Sweets", category: "Food", rating: 4.7, isOpen: true },
+    { id: "sh4", name: "Fresh Vegetables Shop", category: "Grocery", rating: 4.5, isOpen: true }
+  ];
+
+  const currentShops = state.shops.length > 0 ? state.shops : dummyShops;
+
+  const getDummyProducts = (shopId: string): Product[] => [
+    { id: `p1-${shopId}`, shopId, name: "Atta 5kg", price: 200, category: "Grocery" },
+    { id: `p2-${shopId}`, shopId, name: "Sugar 1kg", price: 45, category: "Grocery" },
+    { id: `p3-${shopId}`, shopId, name: "Cold Drink", price: 40, category: "Drinks" },
+    { id: `p4-${shopId}`, shopId, name: "Biscuits", price: 20, category: "Snacks" }
+  ];
+
   const addToCart = (product: Product) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
@@ -72,7 +88,7 @@ export function Shopping() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {state.shops.map((shop) => (
+            {currentShops.map((shop) => (
               <div
                 key={shop.id}
                 onClick={() => shop.isOpen && setSelectedShop(shop)}
@@ -132,7 +148,8 @@ export function Shopping() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {state.products.filter((p) => p.shopId === selectedShop.id).map(
+              {(state.products.length > 0 ? state.products : getDummyProducts(selectedShop.id))
+                .filter((p) => p.shopId === selectedShop.id).map(
                 (product) => {
                   const qty =
                     cart.find((item) => item.product.id === product.id)

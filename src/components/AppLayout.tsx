@@ -99,6 +99,9 @@ export function AppLayout({
         clearInterval(holdIntervalRef.current!);
         holdIntervalRef.current = null;
         setSosStage("activated");
+        if (navigator.vibrate) {
+          navigator.vibrate([200, 100, 200, 100, 500]);
+        }
       }
     }, 50);
   };
@@ -116,7 +119,15 @@ export function AppLayout({
       {/* Top Header */}
       <header className="bg-slate-900/60 backdrop-blur-3xl fixed top-0 w-full z-40 border-b border-white/5 pb-4">
         <div className="max-w-[1024px] mx-auto px-4 mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white font-bold text-lg md:text-xl tracking-tight shrink-0 mr-4">
+          <div className="flex items-center gap-3 text-white font-bold text-lg md:text-xl tracking-tight shrink-0 mr-4">
+            {currentView !== "home" && (
+              <button 
+                onClick={() => setCurrentView("home")}
+                className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-colors border border-white/10"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+            )}
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/40">
               <Users className="w-4 h-4 text-white" />
             </div>
@@ -129,6 +140,14 @@ export function AppLayout({
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-xl font-black text-sm">
               <Coins className="w-4 h-4" /> {user.points || 0}
             </div>
+            <button
+              onClick={() => setCurrentView('notifications' as any)}
+              className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors relative"
+              title="Notifications"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
             <button
               onClick={triggerSOS}
               className="flex items-center gap-1 md:gap-2 bg-red-500/20 text-red-500 border border-red-500/30 px-3 md:px-4 py-1.5 md:py-2 rounded-xl hover:bg-red-500 hover:text-white transition-all font-bold text-xs md:text-sm shadow-lg shadow-red-500/20"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { HomeSlider } from './HomeSlider';
-import { LayoutGrid, HeartHandshake, Briefcase, Store, Users, Map, Phone, Trophy } from 'lucide-react';
+import { LayoutGrid, HeartHandshake, Briefcase, Store, Users, Map, Phone, Trophy, Sun } from 'lucide-react';
 import { ViewState } from '../types';
 
 interface HomeProps {
@@ -29,6 +29,18 @@ export function Home({ onNavigate }: HomeProps) {
       </div>
 
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 md:gap-6">
+        <div className="col-span-3 sm:col-span-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 p-4 rounded-2xl border border-blue-500/30 flex items-center justify-between shadow-lg">
+          <div>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Sun className="w-5 h-5 text-yellow-400" />
+              Sunny, 29°C
+            </h3>
+            <p className="text-sm text-blue-200 mt-1">Perfect day for community activities!</p>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-blue-300 font-medium px-2 py-1 bg-blue-500/20 rounded-lg inline-block">AQI: 45 (Good)</div>
+          </div>
+        </div>
         {sections.map((section) => (
           <button
             key={section.id}

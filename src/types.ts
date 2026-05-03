@@ -19,8 +19,9 @@ export interface User {
   name: string;
   points?: number;
   area?: string;
-  role?: "user" | "provider";
+  role?: "user" | "provider" | "admin";
   isVerified?: boolean;
+  avatar?: string;
 }
 
 export interface ServiceContact {
@@ -108,4 +109,5 @@ export type ViewState =
   | "profile"
   | "privacy"
   | "terms"
-  | "ai-help";
+  | "ai-help"
+  | "notifications";

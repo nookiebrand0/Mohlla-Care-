@@ -44,11 +44,32 @@ export function UserProfile({ user: initialUser, onLogout }: UserProfileProps) {
 
       <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col items-center mb-6">
         <div className="relative mb-4">
-          <div className="w-24 h-24 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center p-1">
-            <div className="w-full h-full bg-slate-900 rounded-full flex items-center justify-center border-2 border-slate-900">
-              <UserIcon className="w-10 h-10 text-white opacity-80" />
+          <div className="w-24 h-24 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center p-1 cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
+            <div className="w-full h-full bg-slate-900 rounded-full flex items-center justify-center border-2 border-slate-900 overflow-hidden relative group">
+              {user.avatar ? (
+                <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <UserIcon className="w-10 h-10 text-white opacity-80" />
+              )}
+              <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition-all">
+                <span className="text-xs font-bold text-white uppercase tracking-wider">Change</span>
+              </div>
             </div>
           </div>
+          <input 
+            type="file" 
+            id="avatar-upload" 
+            accept="image/*" 
+            className="hidden" 
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                 const reader = new FileReader();
+                 reader.onload = (e) => setUser(prev => ({ ...prev, avatar: e.target?.result as string }));
+                 reader.readAsDataURL(file);
+              }
+            }}
+          />
           {!isEditing && (
             <button 
               onClick={() => setIsEditing(true)}
@@ -128,22 +149,39 @@ export function UserProfile({ user: initialUser, onLogout }: UserProfileProps) {
       </div>
 
       <div className="space-y-4">
+        <h3 className="text-xl font-bold text-white px-2 mt-8 mb-4">Settings</h3>
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-sm">
           <button
+            onClick={() => document.documentElement.classList.toggle('dark')}
+            className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400">
+                <Settings className="w-5 h-5" />
+              </div>
+              <span className="font-semibold text-white">Toggle Dark Mode</span>
+            </div>
+          </button>
+          
+          <div className="h-px bg-white/10 w-full" />
+          
+          <button
             onClick={() => {
-              setIsEditing(true);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              // Stub for rotation/portrait mode handle just toggles a class or notifies
+              alert('Orientation rotation mode changed')
             }}
             className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400">
-                <Settings className="w-5 h-5" />
+              <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               </div>
-              <span className="font-semibold text-white">App Settings</span>
+              <span className="font-semibold text-white">Screen Rotation</span>
             </div>
           </button>
+
           <div className="h-px bg-white/10 w-full" />
+          
           <button
             onClick={onLogout}
             className="w-full p-4 flex items-center justify-between hover:bg-red-500/10 transition-colors group"
