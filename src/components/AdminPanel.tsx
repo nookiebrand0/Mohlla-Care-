@@ -61,53 +61,125 @@ export function AdminPanel() {
 
     if (activeTab === 'Issues') {
       if (isAdd) {
-         store.addIssue({ ...editForm, id: Date.now().toString(), upvotes: 0, reportedBy: 'Admin', createdAt: new Date().toISOString() } as any);
+         store.addIssue({ 
+           id: Date.now().toString(),
+           title: editForm.title || '',
+           description: editForm.description || '',
+           category: editForm.category || 'General',
+           status: editForm.status || 'reported',
+           upvotes: 0, 
+           reportedBy: 'Admin', 
+           createdAt: new Date().toISOString() 
+         } as any);
       } else if (isEdit && actionType?.payload) {
-         store.updateIssue(actionType.payload.id, editForm);
+         store.updateIssue(actionType.payload.id, {
+           title: editForm.title,
+           description: editForm.description,
+           category: editForm.category,
+           status: editForm.status
+         });
       } else if (isDelete && actionType?.payload) {
          store.deleteIssue(actionType.payload.id);
       }
     } else if (activeTab === 'Services') {
       if (isAdd) {
-         store.addService({ ...editForm, id: Date.now().toString(), rating: 5 } as any);
+         store.addService({ 
+           id: Date.now().toString(),
+           name: editForm.name || '',
+           serviceType: editForm.serviceType || '',
+           description: editForm.description || '',
+           price: editForm.price || '',
+           phone: editForm.phone || '',
+           rating: 5 
+         } as any);
       } else if (isEdit && actionType?.payload) {
-         store.updateService(actionType.payload.id, editForm);
+         store.updateService(actionType.payload.id, {
+           name: editForm.name,
+           serviceType: editForm.serviceType,
+           description: editForm.description,
+           price: editForm.price,
+           phone: editForm.phone
+         });
       } else if (isDelete && actionType?.payload) {
          store.deleteService(actionType.payload.id);
       }
     } else if (activeTab === 'Jobs') {
       if (isAdd) {
-         store.addJob({ ...editForm, id: Date.now().toString(), type: editForm.category || 'Full-time', contact: editForm.phone || '' } as any);
+         store.addJob({ 
+           id: Date.now().toString(),
+           title: editForm.title || '',
+           company: editForm.company || '',
+           type: (editForm.category || 'Full-time') as any,
+           description: editForm.description || '',
+           salary: editForm.salary || '',
+           contact: editForm.phone || ''
+         });
       } else if (isEdit && actionType?.payload) {
-         store.updateJob(actionType.payload.id, editForm);
+         store.updateJob(actionType.payload.id, {
+           title: editForm.title,
+           company: editForm.company,
+           description: editForm.description,
+           salary: editForm.salary,
+           contact: editForm.phone
+         });
       } else if (isDelete && actionType?.payload) {
          store.deleteJob(actionType.payload.id);
       }
     } else if (activeTab === 'Users') {
       if (isEdit && actionType?.payload) {
-         store.updateUser(actionType.payload.id, editForm);
+         store.updateUser(actionType.payload.id, {
+           name: editForm.name,
+           phone: editForm.phone
+         });
       }
     } else if (activeTab === 'Shop') {
       if (isAdd) {
-         store.addShop({ ...editForm, id: Date.now().toString() } as any);
+         store.addShop({ 
+           id: Date.now().toString(),
+           name: editForm.name || '',
+           category: editForm.category || '',
+           rating: 5,
+           isOpen: true
+         } as any);
       } else if (isEdit && actionType?.payload) {
-         store.updateShop(actionType.payload.id, editForm);
+         store.updateShop(actionType.payload.id, {
+           name: editForm.name,
+           category: editForm.category
+         });
       } else if (isDelete && actionType?.payload) {
          store.deleteShop(actionType.payload.id);
       }
     } else if (activeTab === 'Community') {
       if (isAdd) {
-         store.addCommunityPost({ ...editForm, id: Date.now().toString() } as any);
+         store.addCommunityPost({ 
+           id: Date.now().toString(),
+           content: editForm.description || '',
+           isAnonymous: false,
+           replies: 0,
+           createdAt: new Date().toISOString()
+         } as any);
       } else if (isEdit && actionType?.payload) {
-         store.updateCommunityPost(actionType.payload.id, editForm);
+         store.updateCommunityPost(actionType.payload.id, {
+           content: editForm.description || ''
+         });
       } else if (isDelete && actionType?.payload) {
          store.deleteCommunityPost(actionType.payload.id);
       }
     } else if (activeTab === 'Directory') {
       if (isAdd) {
-         store.addServiceContact({ ...editForm, id: Date.now().toString() } as any);
+         store.addServiceContact({ 
+           id: Date.now().toString(),
+           name: editForm.name || '',
+           category: editForm.category || '',
+           phone: editForm.phone || '',
+           rating: 5
+         } as any);
       } else if (isEdit && actionType?.payload) {
-         store.updateServiceContact(actionType.payload.id, editForm);
+         store.updateServiceContact(actionType.payload.id, {
+           name: editForm.name,
+           category: editForm.category,
+           phone: editForm.phone
+         });
       } else if (isDelete && actionType?.payload) {
          store.deleteServiceContact(actionType.payload.id);
       }

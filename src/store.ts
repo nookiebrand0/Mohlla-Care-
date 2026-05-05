@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Issue, Job, ServiceContact, ServiceProvider, Shop, Product, LeaderboardEntry, CommunityPost } from './types';
+import { User, Issue, Job, ServiceContact, ServiceProvider, Shop, Product, LeaderboardEntry, CommunityPost } from './types';
 import { db, auth } from './firebase';
 import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, getDocFromServer } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';

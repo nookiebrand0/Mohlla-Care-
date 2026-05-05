@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Loader2, Fingerprint, MapPin, User as UserIcon, Lock, Users } from "lucide-react";
 import { User } from "../types";
 import { auth } from "../firebase";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 interface LoginScreenProps {
   onLogin: (user: User) => void;
@@ -13,12 +13,62 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRegister, setIsRegister] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    try {
+      if (isRegister) {
+        if (password !== confirmPassword) {
+          throw new Error("Passwords do not match.");
+        }
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(result.user, { displayName: name });
+        onLogin({
+          id: result.user.uid,
+          name: name || "Citizen",
+          phone: "No phone linked",
+          area: "",
+          role: result.user.email === 'nookiebrand0@gmail.com' ? "admin" : "user",
+          points: 0,
+        });
+      } else {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        onLogin({
+          id: result.user.uid,
+          name: result.user.displayName || "Citizen",
+          phone: result.user.phoneNumber || "No phone linked",
+          area: "",
+          role: result.user.email === 'nookiebrand0@gmail.com' ? "admin" : "user",
+          points: 0,
+        });
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to authenticate.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
+      
+      const isInIframe = window !== window.parent;
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       onLogin({
@@ -29,10 +79,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         role: user.email === 'nookiebrand0@gmail.com' ? "admin" : "user",
         points: 0,
       });
+      setLoading(false);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to login via Google.");
-    } finally {
       setLoading(false);
     }
   };
@@ -87,36 +137,45 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
              {isRegister ? 'Create your account' : 'Login to your account'}
            </p>
 
-           {/* Form Inputs (UI Only - Google Auth is used behind the scenes) */}
-           <div className="w-full space-y-4">
+           {/* Form Inputs */}
+           <form onSubmit={handleEmailAuth} className="w-full space-y-4">
+              {isRegister && (
+                  <div className="w-full bg-[#7B92F2] rounded-full flex items-center px-5 py-3.5 shadow-sm border border-white/10 transition-colors focus-within:bg-[#6c85eb] focus-within:border-white/30">
+                    <UserIcon className="w-5 h-5 text-indigo-100 mr-3" />
+                    <input 
+                        type="text" 
+                        placeholder="Full Name" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="bg-transparent border-none outline-none text-white placeholder:text-indigo-200/80 w-full font-medium" 
+                        required
+                    />
+                  </div>
+              )}
+
               <div className="w-full bg-[#7B92F2] rounded-full flex items-center px-5 py-3.5 shadow-sm border border-white/10 transition-colors focus-within:bg-[#6c85eb] focus-within:border-white/30">
-                 <UserIcon className="w-5 h-5 text-indigo-100 mr-3" />
+                 <div className="w-5 h-5 flex items-center justify-center mr-3">
+                   <span className="text-indigo-100 font-bold text-lg">@</span>
+                 </div>
                  <input 
-                    type="text" 
-                    placeholder="Username" 
+                    type="email" 
+                    placeholder="Email address" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="bg-transparent border-none outline-none text-white placeholder:text-indigo-200/80 w-full font-medium" 
+                    required
                  />
               </div>
-
-              {isRegister && (
-                 <div className="w-full bg-[#7B92F2] rounded-full flex items-center px-5 py-3.5 shadow-sm border border-white/10 transition-colors focus-within:bg-[#6c85eb] focus-within:border-white/30">
-                   <div className="w-5 h-5 flex items-center justify-center mr-3">
-                     <span className="text-indigo-100 font-bold text-lg">@</span>
-                   </div>
-                   <input 
-                      type="email" 
-                      placeholder="Email address" 
-                      className="bg-transparent border-none outline-none text-white placeholder:text-indigo-200/80 w-full font-medium" 
-                   />
-                 </div>
-              )}
 
               <div className="w-full bg-[#7B92F2] rounded-full flex items-center px-5 py-3.5 shadow-sm border border-white/10 transition-colors focus-within:bg-[#6c85eb] focus-within:border-white/30">
                  <Lock className="w-5 h-5 text-indigo-100 mr-3" />
                  <input 
                     type="password" 
                     placeholder="Password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="bg-transparent border-none outline-none text-white placeholder:text-indigo-200/80 w-full font-medium" 
+                    required
                  />
               </div>
 
@@ -126,7 +185,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                    <input 
                       type="password" 
                       placeholder="Confirm password" 
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       className="bg-transparent border-none outline-none text-white placeholder:text-indigo-200/80 w-full font-medium" 
+                      required
                    />
                  </div>
               )}
@@ -142,13 +204,28 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               )}
 
               <button 
-                 onClick={handleGoogleLogin} 
+                 type="submit"
                  disabled={loading}
                  className="w-full py-4 mt-6 rounded-full bg-[#1A2C68] hover:bg-[#12204c] text-white font-bold tracking-wide flex justify-center items-center shadow-xl shadow-black/10 transition-all active:scale-[0.98]"
               >
-                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isRegister ? 'REGISTER WITH GOOGLE' : 'LOGIN WITH GOOGLE')}
+                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isRegister ? 'REGISTER' : 'LOGIN')}
               </button>
-           </div>
+              
+              <div className="relative flex py-2 items-center">
+                 <div className="flex-grow border-t border-indigo-200/30"></div>
+                 <span className="flex-shrink-0 mx-4 text-xs text-indigo-200/50">OR</span>
+                 <div className="flex-grow border-t border-indigo-200/30"></div>
+              </div>
+
+              <button 
+                 type="button"
+                 onClick={handleGoogleLogin} 
+                 disabled={loading}
+                 className="w-full py-4 rounded-full bg-white text-[#1A2C68] font-bold tracking-wide flex justify-center items-center shadow-xl shadow-black/10 transition-all active:scale-[0.98]"
+              >
+                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'CONTINUE WITH GOOGLE'}
+              </button>
+           </form>
            
            {error && (
              <div className="mt-4 p-3 bg-red-500/20 text-white text-sm font-medium rounded-xl border border-red-500/30">

@@ -284,8 +284,6 @@ export default function App() {
         );
       case "profile":
         return <UserProfile user={user!} onLogout={handleLogout} onReward={() => handleRewardPoints(50, "referring a friend")} onAdminClick={() => setCurrentView("admin")} />;
-      case "admin":
-        return <AdminPanel />;
       case "privacy":
         return <PrivacyPolicy />;
       case "terms":
