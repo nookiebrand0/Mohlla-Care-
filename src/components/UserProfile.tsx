@@ -11,7 +11,14 @@ import {
   Check,
   X,
   Share2,
-  Copy
+  Copy,
+  Bell,
+  Globe,
+  Monitor,
+  HelpCircle,
+  Phone,
+  FileText,
+  Lock
 } from "lucide-react";
 
 import { useStore, store } from "../store";
@@ -32,258 +39,215 @@ export function UserProfile({ user: initialUser, onLogout, onReward, onAdminClic
   });
   
   const state = useStore();
-  const userActivities = state.activities?.filter(a => a.userId === user.id).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) || [];
+  const userActivities = state.activities?.filter((a: any) => a.userId === user.id).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) || [];
 
   const handleSave = () => {
+    store.updateUser(user.id, { name: editForm.name, phone: editForm.phone });
     setUser({ ...user, name: editForm.name, phone: editForm.phone });
     setIsEditing(false);
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="w-full pb-16"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="w-full min-h-screen bg-white dark:bg-[#1E1F2A] rounded-[32px] overflow-hidden flex flex-col relative text-slate-900 dark:text-white font-sans"
     >
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white tracking-tight">
-          Your Profile
-        </h2>
-      </div>
+      {/* Curved Background Header */}
+      <div className="absolute top-0 left-0 w-full h-[220px] bg-slate-100 dark:bg-[#2A2B36] rounded-b-[60px] shadow-sm z-0"></div>
 
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col items-center mb-6">
-        <div className="relative mb-4">
-          <div className="w-24 h-24 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center p-1 cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
-            <div className="w-full h-full bg-slate-900 rounded-full flex items-center justify-center border-2 border-slate-900 overflow-hidden relative group">
-              {user.avatar ? (
-                <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <UserIcon className="w-10 h-10 text-white opacity-80" />
-              )}
-              <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition-all">
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Change</span>
-              </div>
+      <div className="relative z-10 pt-16 flex flex-col items-center px-6">
+         {/* Top Icons */}
+         <div className="w-full flex justify-between absolute top-6 px-6">
+            <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><Bell className="w-6 h-6" /></button>
+            <div className="flex gap-4">
+              <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><History className="w-6 h-6" /></button>
+              <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><MoreVertical className="w-6 h-6" /></button>
             </div>
-          </div>
-          <input 
-            type="file" 
-            id="avatar-upload" 
-            accept="image/*" 
-            className="hidden" 
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                 const reader = new FileReader();
-                 reader.onload = (e) => setUser(prev => ({ ...prev, avatar: e.target?.result as string }));
-                 reader.readAsDataURL(file);
-              }
-            }}
-          />
-          {!isEditing && (
-            <button 
-              onClick={() => setIsEditing(true)}
-              className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full shadow-lg border-2 border-slate-900 hover:bg-blue-600 transition-colors"
-            >
-              <Edit3 className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+         </div>
 
-        {isEditing ? (
-          <div className="flex flex-col items-center w-full max-w-sm gap-3 mt-2 mb-4">
+         {/* Avatar */}
+         <div className="relative mb-3 mt-4">
+            <div className="w-24 h-24 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-4 border-white dark:border-[#1E1F2A] overflow-hidden cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
+               {user.avatar ? (
+                 <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+               ) : (
+                 <div className="w-full h-full bg-orange-100 flex items-center justify-center">
+                    <UserIcon className="w-12 h-12 text-orange-500" />
+                 </div>
+               )}
+            </div>
             <input 
-              type="text" 
-              value={editForm.name} 
-              onChange={e => setEditForm({...editForm, name: e.target.value})}
-              className="w-full bg-black/50 border border-white/20 text-white rounded-xl px-4 py-3 text-center font-bold text-lg"
-              placeholder="Your Name"
-            />
-            <input 
-              type="text" 
-              value={editForm.phone} 
-              onChange={e => setEditForm({...editForm, phone: e.target.value})}
-              className="w-full bg-black/50 border border-white/20 text-blue-400 rounded-xl px-4 py-3 text-center font-semibold"
-              placeholder="Phone Number"
-            />
-            <div className="flex gap-2 w-full mt-2">
-              <button 
-                onClick={handleSave} 
-                className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-bold transition-all"
-              >
-                <Check className="w-5 h-5" /> Save
-              </button>
-              <button 
-                onClick={() => setIsEditing(false)} 
-                className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 rounded-xl font-bold transition-all"
-              >
-                <X className="w-5 h-5" /> Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <h3 className="text-2xl font-bold text-white flex items-center gap-2 mt-2">
-              {user.name || "Set Name"}
-              <ShieldCheck className="w-5 h-5 text-green-500" />
-            </h3>
-            <p className="text-slate-400 mt-1">{user.phone}</p>
-          </>
-        )}
-
-        {!isEditing && (
-          <div className="flex items-center gap-2 mt-4 bg-white/5 py-1.5 px-3 rounded-full text-xs font-semibold text-slate-300">
-            <MapPin className="w-4 h-4 text-blue-400" />
-            {user.area || "Add your area / locality"}
-          </div>
-        )}
-
-        <div className="w-full mt-8 pt-8 border-t border-white/10 grid grid-cols-2 gap-4 text-center">
-          <div>
-            <div className="text-3xl font-black text-white">
-              {user.points || 0}
-            </div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">
-              Karma Points
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl font-black text-white capitalize">
-              {user.role || "User"}
-            </div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">
-              Account Type
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-8">
-        <h3 className="text-xl font-bold text-white px-2 mb-4">Refer & Earn</h3>
-        <div className="bg-gradient-to-r from-blue-600/80 to-indigo-600/80 backdrop-blur-md border border-blue-500/30 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-20">
-            <Share2 className="w-24 h-24 text-white" />
-          </div>
-          <div className="relative z-10">
-            <h4 className="text-white font-bold text-lg mb-1">Invite your neighbors!</h4>
-            <p className="text-blue-100 text-sm mb-4">Get 50 points for every person who signs up using your link.</p>
-            
-            <div className="flex items-center gap-2 mb-4 bg-black/40 p-3 rounded-xl border border-white/10">
-              <span className="text-slate-300 font-mono flex-1 select-all" id="referral-code">
-                HBBPR-{user.id?.substring(0, 6).toUpperCase() || 'NEW789'}
-              </span>
-              <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(`HBBPR-${user.id?.substring(0, 6).toUpperCase() || 'NEW789'}`);
-                  alert("Referral code copied!");
-                }}
-                className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-all flex items-center justify-center shrink-0"
-              >
-                <Copy className="w-4 h-4" />
-              </button>
-            </div>
-
-            <button 
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: 'Join Habibpura Community',
-                    text: `Use my referral code HBBPR-${user.id?.substring(0, 6).toUpperCase() || 'NEW789'} to get bonus points!`,
-                    url: window.location.href,
-                  }).then(() => {
-                     // Optionally reward them just for sharing
-                     if (onReward) onReward();
-                  }).catch(console.error);
-                } else {
-                  // Fallback
-                  if (onReward) onReward();
-                  alert("Thanks for sharing! (Points awarded)");
+              type="file" 
+              id="avatar-upload" 
+              accept="image/*" 
+              className="hidden" 
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                   const reader = new FileReader();
+                   reader.onload = (e) => {
+                      const avatarStr = e.target?.result as string;
+                      setUser(prev => ({ ...prev, avatar: avatarStr }));
+                      store.updateUser(user.id, { avatar: avatarStr });
+                   };
+                   reader.readAsDataURL(file);
                 }
               }}
-              className="w-full py-3 bg-white hover:bg-slate-100 text-indigo-600 font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
-            >
-              <Share2 className="w-5 h-5" /> Share App Link
-            </button>
-          </div>
-        </div>
-      </div>
+            />
+            {!isEditing && (
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="absolute bottom-0 right-0 bg-white dark:bg-slate-700 text-slate-800 dark:text-white p-1.5 rounded-full shadow-md border-2 border-white dark:border-[#1E1F2A] hover:bg-slate-100 transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+              </button>
+            )}
+         </div>
 
-      <div className="mb-8">
-        <h3 className="text-xl font-bold text-white px-2 mb-4">Activity History</h3>
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-sm p-2">
-          {userActivities.length === 0 ? (
-             <div className="p-4 text-center text-slate-400">No activity yet. Check out the community!</div>
-          ) : userActivities.map((act: any) => (
-             <div key={act.id} className="p-3 border-b border-white/10 flex items-center justify-between last:border-0">
-               <div>
-                 <div className="text-white font-semibold">{act.title}</div>
-                 <div className="text-xs text-slate-400">
-                    {new Date(act.createdAt).toLocaleDateString()} • {act.points > 0 ? `+${act.points} points` : act.detail}
-                 </div>
-               </div>
+         {/* Info */}
+         {isEditing ? (
+           <div className="flex flex-col items-center w-full max-w-sm gap-3 mt-2 mb-4 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-xl border border-slate-100 dark:border-white/5">
+             <input 
+               type="text" 
+               value={editForm.name} 
+               onChange={e => setEditForm({...editForm, name: e.target.value})}
+               className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-4 py-3 text-center font-bold"
+               placeholder="Your Name"
+             />
+             <input 
+               type="text" 
+               value={editForm.phone} 
+               onChange={e => setEditForm({...editForm, phone: e.target.value})}
+               className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 rounded-xl px-4 py-3 text-center"
+               placeholder="Phone Number"
+             />
+             <div className="flex gap-2 w-full mt-2">
+               <button 
+                 onClick={handleSave} 
+                 className="flex-1 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-xl font-bold transition-all"
+               >
+                 Save
+               </button>
+               <button 
+                 onClick={() => setIsEditing(false)} 
+                 className="flex-1 flex items-center justify-center gap-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 hover:dark:bg-slate-600 text-slate-800 dark:text-white px-4 py-3 rounded-xl font-bold transition-all"
+               >
+                 Cancel
+               </button>
              </div>
-          ))}
-        </div>
+           </div>
+         ) : (
+           <div className="text-center mb-6">
+             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 flex items-center justify-center gap-2">
+               {user.name || "Set Name"}
+               {user.role === 'admin' && <ShieldCheck className="w-5 h-5 text-green-500" />}
+             </h3>
+             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+               youremail@domain.com | {user.phone || "+01 234 567 89"}
+             </p>
+           </div>
+         )}
       </div>
 
-      <div className="space-y-4">
-        <h3 className="text-xl font-bold text-white px-2 mb-4">Settings</h3>
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-sm">
-          {user.role === 'admin' && (
-            <button
-              onClick={onAdminClick}
-              className="w-full flex items-center justify-between p-4 text-white hover:bg-white/5 transition-colors border-b border-white/10"
+      <div className="flex-1 px-6 pb-32 relative z-10 w-full max-w-md mx-auto">
+         {/* Top Section Settings */}
+         <div className="bg-white dark:bg-[#15161C] rounded-[24px] overflow-hidden shadow-sm border border-slate-100 dark:border-white/5 mb-4">
+            <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              <div className="flex items-center gap-3">
+                 <UserIcon className="w-5 h-5 text-slate-400" />
+                 <span className="font-semibold text-sm">Edit profile information</span>
+              </div>
+            </button>
+            <div className="w-[calc(100%-40px)] mx-auto h-[1px] bg-slate-100 dark:bg-white/5"></div>
+            <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              <div className="flex items-center gap-3">
+                 <Bell className="w-5 h-5 text-slate-400" />
+                 <span className="font-semibold text-sm">Notifications</span>
+              </div>
+              <span className="text-orange-500 text-xs font-bold uppercase tracking-wider">ON</span>
+            </button>
+            <div className="w-[calc(100%-40px)] mx-auto h-[1px] bg-slate-100 dark:bg-white/5"></div>
+            <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              <div className="flex items-center gap-3">
+                 <Globe className="w-5 h-5 text-slate-400" />
+                 <span className="font-semibold text-sm">Language</span>
+              </div>
+              <span className="text-orange-500 text-xs font-bold uppercase tracking-wider">English</span>
+            </button>
+         </div>
+
+         {/* Middle Section Settings */}
+         <div className="bg-white dark:bg-[#15161C] rounded-[24px] overflow-hidden shadow-sm border border-slate-100 dark:border-white/5 mb-4">
+            <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              <div className="flex items-center gap-3">
+                 <Lock className="w-5 h-5 text-slate-400" />
+                 <span className="font-semibold text-sm">Security</span>
+              </div>
+            </button>
+            <div className="w-[calc(100%-40px)] mx-auto h-[1px] bg-slate-100 dark:bg-white/5"></div>
+            <button 
+              onClick={() => document.documentElement.classList.toggle('dark')}
+              className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <ShieldCheck className="w-5 h-5 text-indigo-400" />
-                <span className="font-medium">Admin Panel</span>
+                 <Monitor className="w-5 h-5 text-slate-400" />
+                 <span className="font-semibold text-sm">Theme</span>
               </div>
-              <Check className="w-4 h-4 text-slate-500 opacity-0" />
+              <span className="text-orange-500 text-xs font-bold uppercase tracking-wider hidden dark:inline">Dark mode</span>
+              <span className="text-orange-500 text-xs font-bold uppercase tracking-wider dark:hidden">Light mode</span>
             </button>
-          )}
-          <button
-            onClick={() => document.documentElement.classList.toggle('dark')}
-            className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400">
-                <Settings className="w-5 h-5" />
-              </div>
-              <span className="font-semibold text-white">Toggle Dark Mode</span>
-            </div>
-          </button>
-          
-          <div className="h-px bg-white/10 w-full" />
-          
-          <button
-            onClick={() => {
-              // Stub for rotation/portrait mode handle just toggles a class or notifies
-              alert('Orientation rotation mode changed')
-            }}
-            className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-              </div>
-              <span className="font-semibold text-white">Screen Rotation</span>
-            </div>
-          </button>
+         </div>
 
-          <div className="h-px bg-white/10 w-full" />
-          
-          <button
-            onClick={onLogout}
-            className="w-full p-4 flex items-center justify-between hover:bg-red-500/10 transition-colors group"
-          >
-            <div className="flex items-center gap-3 text-red-400">
-              <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all">
-                <LogOut className="w-5 h-5" />
+         {/* Bottom Section Settings */}
+         <div className="bg-white dark:bg-[#15161C] rounded-[24px] overflow-hidden shadow-sm border border-slate-100 dark:border-white/5">
+            <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              <div className="flex items-center gap-3">
+                 <HelpCircle className="w-5 h-5 text-slate-400" />
+                 <span className="font-semibold text-sm">Help & Support</span>
               </div>
-              <span className="font-semibold">Log Out</span>
-            </div>
-          </button>
-        </div>
+            </button>
+            <div className="w-[calc(100%-40px)] mx-auto h-[1px] bg-slate-100 dark:bg-white/5"></div>
+            <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              <div className="flex items-center gap-3">
+                 <Phone className="w-5 h-5 text-slate-400" />
+                 <span className="font-semibold text-sm">Contact us</span>
+              </div>
+            </button>
+            <div className="w-[calc(100%-40px)] mx-auto h-[1px] bg-slate-100 dark:bg-white/5"></div>
+            <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              <div className="flex items-center gap-3">
+                 <FileText className="w-5 h-5 text-slate-400" />
+                 <span className="font-semibold text-sm">Privacy policy</span>
+              </div>
+            </button>
+         </div>
+
+         <div className="mt-8 mb-4 flex justify-center">
+            <button 
+              onClick={onLogout}
+              className="text-red-500 font-bold uppercase tracking-wider text-sm flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-500/10 px-6 py-3 rounded-full transition-colors"
+            >
+              <LogOut className="w-5 h-5" /> Logout
+            </button>
+         </div>
       </div>
     </motion.div>
+  );
+}
+
+function History({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function MoreVertical({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+       <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+    </svg>
   );
 }

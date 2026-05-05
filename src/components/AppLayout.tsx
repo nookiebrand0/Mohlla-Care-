@@ -40,9 +40,10 @@ export const topNavItems = [
 ];
 
 export const bottomNavItems = [
-  { id: "services" as ViewState, icon: HeartHandshake, label: "Services" },
-  { id: "shopping" as ViewState, icon: Store, label: "Shop" },
-  { id: "map" as ViewState, icon: Map, label: "Map" },
+  { id: "dashboard" as ViewState, icon: LayoutGrid, label: "Feeds" },
+  { id: "leaderboard" as ViewState, icon: Trophy, label: "Ranking" },
+  { id: "shopping" as ViewState, icon: Store, label: "Wallet" },
+  { id: "profile" as ViewState, icon: UserIcon, label: "Profile" },
 ];
 
 export function AppLayout({
@@ -115,145 +116,119 @@ export function AppLayout({
   };
 
   return (
-    <div className="min-h-screen text-white relative pb-24 pt-[140px] md:pt-[120px] bg-transparent">
-      {/* Top Header */}
-      <header className="bg-slate-900/60 backdrop-blur-3xl fixed top-0 w-full z-40 border-b border-white/5 pb-4">
-        <div className="max-w-[1024px] mx-auto px-4 mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 text-white font-bold text-lg md:text-xl tracking-tight shrink-0 mr-4">
-            {currentView !== "home" && (
-              <button 
-                onClick={() => setCurrentView("home")}
-                className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-colors border border-white/10"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
-              </button>
-            )}
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/40">
-              <Users className="w-4 h-4 text-white" />
+    <div className="min-h-screen text-slate-900 dark:text-white relative pb-32 bg-slate-50 dark:bg-black md:pt-[24px]">
+      {/* Hide default header unless we need it, we rely on individual views for more immersive look */}
+      {(currentView === 'home' || currentView === 'dashboard') && (
+        <header className="bg-transparent border-none w-full z-40 relative px-4 pt-4 pb-2">
+          <div className="max-w-[1024px] mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3 text-slate-900 dark:text-white font-bold text-xl tracking-tight shrink-0">
+              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-orange-500 shadow-md">
+                {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><UserIcon className="w-4 h-4 text-slate-500" /></div>}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-black leading-tight">Hi, {user.name?.split(' ')[0] || 'User'}!</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">Welcome back</span>
+              </div>
             </div>
-            <span>
-              Mohalla <span className="text-blue-400">Solve</span>
-            </span>
-          </div>
 
-          <div className="flex items-center gap-2 md:gap-4 shrink-0">
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-xl font-black text-sm">
-              <Coins className="w-4 h-4" /> {user.points || 0}
-            </div>
-            <button
-              onClick={() => setCurrentView('notifications' as any)}
-              className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors relative"
-              title="Notifications"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <button
-              onClick={triggerSOS}
-              className="flex items-center gap-1 md:gap-2 bg-red-500/20 text-red-500 border border-red-500/30 px-3 md:px-4 py-1.5 md:py-2 rounded-xl hover:bg-red-500 hover:text-white transition-all font-bold text-xs md:text-sm shadow-lg shadow-red-500/20"
-            >
-              <ShieldAlert className="w-4 h-4 md:w-5 md:h-5" /> SOS
-            </button>
-            <button
-              onClick={() => setCurrentView("profile")}
-              className={`flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-xl transition-all font-bold text-xs md:text-sm border ${
-                currentView === "profile"
-                  ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
-                  : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10"
-              }`}
-            >
-              <UserIcon className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="hidden md:inline">Profile</span>
-            </button>
-            <button
-              onClick={toggleTheme}
-              className="text-slate-400 hover:text-blue-400 p-2 rounded-full hover:bg-white/10 transition-colors"
-              title="Toggle Theme"
-            >
-              {isDark ? <Sun className="w-4 h-4 md:w-5 md:h-5" /> : <Moon className="w-4 h-4 md:w-5 md:h-5" />}
-            </button>
-            <button
-              onClick={onLogout}
-              className="text-slate-400 hover:text-red-400 p-2 rounded-full hover:bg-white/10 transition-colors"
-              title="Logout"
-            >
-              <LogOut className="w-4 h-4 md:w-5 md:h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Floating Rounded Navigation Box (Goal Box) */}
-        <div className="max-w-[1024px] mx-auto px-2 md:px-4 mt-4">
-          <nav className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center gap-1 overflow-x-auto scrollbar-hide px-2 py-2">
-            {topNavItems.map((item) => (
+            <div className="flex items-center gap-3">
               <button
-                key={item.id}
-                onClick={() => setCurrentView(item.id)}
-                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-full transition-all whitespace-nowrap shrink-0 border ${
-                  currentView === item.id
-                    ? "bg-blue-500/20 text-blue-400 border-blue-500/30 shadow-inner"
-                    : "text-slate-400 hover:bg-white/5 hover:text-slate-200 border-transparent"
-                }`}
+                onClick={triggerSOS}
+                className="flex items-center justify-center w-9 h-9 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-500 rounded-full shadow-sm hover:scale-105 transition-transform"
               >
-                <item.icon className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="font-medium text-xs md:text-sm">
-                  {item.label}
-                </span>
+                <ShieldAlert className="w-5 h-5" />
               </button>
-            ))}
-          </nav>
-        </div>
-      </header>
+              <button
+                onClick={() => setCurrentView('notifications' as any)}
+                className="relative flex items-center justify-center w-9 h-9 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full shadow-sm border border-slate-100 dark:border-white/5 hover:scale-105 transition-transform"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full"></span>
+              </button>
+            </div>
+          </div>
+        </header>
+      )}
 
       {/* Main Content Area */}
-      <main className="max-w-[1024px] mx-auto z-10 relative px-4 sm:px-6">
+      <main className="max-w-[1024px] mx-auto z-10 relative">
         {children}
       </main>
 
-      {/* Footer Links */}
-      <div className="max-w-[1024px] mx-auto mt-12 mb-28 text-center text-sm font-medium flex items-center justify-center gap-4 text-slate-500 dark:text-slate-400">
-        <button onClick={() => setCurrentView("privacy")} className="hover:text-blue-500 transition-colors">Privacy Policy</button>
-        <span>&bull;</span>
-        <button onClick={() => setCurrentView("terms")} className="hover:text-blue-500 transition-colors">Terms</button>
-        <span>&bull;</span>
-        <button onClick={() => setCurrentView("ai-help")} className="flex items-center gap-1 hover:text-indigo-400 transition-colors">
-          <Sparkles className="w-4 h-4" /> AI Help Center
-        </button>
-      </div>
+      {/* Bottom Floating Navigation */ }
+      <div className="fixed bottom-0 left-0 w-full z-50 pointer-events-none">
+        <div className="w-full max-w-md mx-auto pointer-events-auto relative">
+          
+          {/* Main Bar with true physical cutout using CSS mask */}
+          <div 
+            className="absolute bottom-0 w-full h-[70px] bg-white dark:bg-[#1E1F2A] rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]"
+            style={{
+              // This creates a circular cutout at the top-center
+              WebkitMaskImage: 'radial-gradient(circle at 50% 0px, transparent 40px, black 41px)',
+              maskImage: 'radial-gradient(circle at 50% 0px, transparent 40px, black 41px)',
+              borderTop: '1px solid rgba(255,255,255,0.05)'
+            }}
+          >
+             {/* Left Section */}
+             <div className="absolute top-0 left-0 h-full flex w-[40%] justify-between px-6 items-center">
+                <button 
+                  onClick={() => setCurrentView("dashboard")} 
+                  className={`flex flex-col items-center gap-1 w-12 transition-colors ${currentView === 'dashboard' ? 'text-orange-500' : 'text-slate-500 dark:text-slate-400'}`}
+                >
+                  <LayoutGrid className="w-6 h-6" strokeWidth={currentView === 'dashboard' ? 2.5 : 2} />
+                  <span className="text-[10px] font-bold">Problems</span>
+                </button>
+                <button 
+                  onClick={() => setCurrentView("leaderboard")} 
+                  className={`flex flex-col items-center gap-1 w-12 transition-colors ${currentView === 'leaderboard' ? 'text-orange-500' : 'text-slate-500 dark:text-slate-400'}`}
+                >
+                  <Trophy className="w-6 h-6" strokeWidth={currentView === 'leaderboard' ? 2.5 : 2} />
+                  <span className="text-[10px] font-bold">Ranking</span>
+                </button>
+             </div>
 
-      {/* Bottom Floating Navigation (Map, Services, Shop) */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-[400px]">
-        <nav className="bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-full shadow-2xl shadow-blue-500/10 flex items-center justify-between px-2 py-2">
-          {bottomNavItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setCurrentView(item.id)}
-              className={`flex flex-col md:flex-row items-center justify-center flex-1 gap-1 md:gap-2 py-2 md:py-3 rounded-full transition-all border ${
-                currentView === item.id
-                  ? "bg-blue-500 text-white shadow-lg border-blue-400/50"
-                  : "text-slate-400 hover:bg-white/5 hover:text-white border-transparent"
-              }`}
-            >
-              <item.icon className="w-5 h-5 md:w-5 md:h-5" />
-              <span className="font-semibold text-[10px] md:text-sm">
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </nav>
+             {/* Right Section */}
+             <div className="absolute top-0 right-0 h-full flex w-[40%] justify-between px-6 items-center">
+                <button 
+                  onClick={() => setCurrentView("shopping")} 
+                  className={`flex flex-col items-center gap-1 w-12 transition-colors ${currentView === 'shopping' ? 'text-orange-500' : 'text-slate-500 dark:text-slate-400'}`}
+                >
+                  <Store className="w-6 h-6" strokeWidth={currentView === 'shopping' ? 2.5 : 2} />
+                  <span className="text-[10px] font-bold">Shop</span>
+                </button>
+                <button 
+                  onClick={() => setCurrentView("profile")} 
+                  className={`flex flex-col items-center gap-1 w-12 transition-colors ${currentView === 'profile' ? 'text-orange-500' : 'text-slate-500 dark:text-slate-400'}`}
+                >
+                  <UserIcon className="w-6 h-6" strokeWidth={currentView === 'profile' ? 2.5 : 2} />
+                  <span className="text-[10px] font-bold">Profile</span>
+                </button>
+             </div>
+          </div>
+
+          {/* Floating Center Button, perfectly aligned inside the cutout */}
+          <button 
+            onClick={() => setCurrentView("home")}
+            className={`absolute left-1/2 bottom-[30px] -translate-x-1/2 w-[64px] h-[64px] rounded-full flex items-center justify-center transition-transform active:scale-95 z-20 
+              shadow-[0_10px_20px_rgba(249,115,22,0.3)]
+              ${currentView === 'home' ? 'bg-orange-500 text-white' : 'bg-slate-800 dark:bg-slate-700 text-white'}`}
+          >
+             <HomeIcon className="w-7 h-7" strokeWidth={2.5} />
+          </button>
+          
+          {/* Invisible spacer to maintain layout flow if needed, though this is absolute */}
+          <div className="h-[70px] w-full"></div>
+        </div>
       </div>
 
       {/* Floating AI Help Center Button */}
       {currentView !== "ai-help" && (
         <button
           onClick={() => setCurrentView("ai-help")}
-          className="fixed bottom-[100px] md:bottom-8 right-4 md:right-8 z-50 bg-indigo-500 text-white rounded-full px-4 py-3 shadow-xl shadow-indigo-500/30 flex items-center gap-2 hover:bg-indigo-600 hover:scale-105 transition-all outline-none focus:ring-2 focus:ring-indigo-400 border border-white/10 group"
+          className="fixed bottom-[90px] right-4 z-40 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full w-12 h-12 shadow-xl flex items-center justify-center hover:scale-105 transition-all outline-none border border-white/10 group"
           title="AI Help Center"
         >
-          <div className="bg-white/20 p-1 rounded-full">
-            <Bot className="w-5 h-5 md:w-6 md:h-6 group-hover:rotate-12 transition-transform" />
-          </div>
-          <span className="font-bold text-sm md:text-base pr-1">Help Center</span>
+          <Bot className="w-6 h-6 group-hover:rotate-12 transition-transform" />
         </button>
       )}
 
